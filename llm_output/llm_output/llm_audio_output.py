@@ -30,8 +30,6 @@ import json
 import requests
 import time
 
-# AWS ASR related
-import boto3
 import os
 
 # Audio recording related
@@ -42,6 +40,8 @@ from scipy.io.wavfile import write
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+
+from elevenlabs import set_api_key, generate, play
 
 # Global Initialization
 from llm_config.user_config import UserConfig
@@ -58,6 +58,9 @@ class AudioOutput(Node):
             String, "/llm_initialization_state", 0
         )
 
+        # eleven labs
+        set_api_key(os.environ["ELEVENLABS_API_KEY"])
+
         # LLM state publisher
         self.llm_state_publisher = self.create_publisher(String, "/llm_state", 0)
 
@@ -65,50 +68,27 @@ class AudioOutput(Node):
         self.feed_back_for_user_subscriber = self.create_subscription(
             String, "/llm_feedback_to_user", self.feedback_for_user_callback, 10
         )
-        print(os.system("ls /tmp"))
-        os.system(
-            "mpv /tmp/'cowmoo.mp3'"
-        )
-        # # AWS parameters
-        # self.aws_access_key_id = config.aws_access_key_id
-        # self.aws_secret_access_key = config.aws_secret_access_key
-        # self.aws_region_name = config.aws_region_name
-        # self.aws_session = boto3.Session(
-        #     aws_access_key_id=self.aws_access_key_id,
-        #     aws_secret_access_key=self.aws_secret_access_key,
-        #     region_name=self.aws_region_name,
-        # )
+
         # Initialization ready
         self.publish_string("output ready", self.initialization_publisher)
 
     def feedback_for_user_callback(self, msg):
         self.get_logger().info(f"Received text: '{msg.data}'")
-
-        # Configure TTS properties as needed (optional)
-        # Example: self.tts_engine.setProperty('voice', your_preferred_voice_id)
-        # Example: self.tts_engine.setProperty('rate', speech_rate)
-
-        # Synthesize speech from the received text
-        # try:
-        #     self.tts_engine.say(msg.data)
-        #     self.tts_engine.runAndWait()
-        # except Exception as e:
-        #     self.get_logger().error(f"Error during speech synthesis: {e}")
-
-        # No need to save or play the audio file manually, pyttsx3 handles it
-
         # Log and publish state updates
         self.get_logger().info("Finished TTS playback.")
         self.publish_string("feedback finished", self.llm_state_publisher)
         self.publish_string("listening", self.llm_state_publisher)
-        # self.get_logger().info("Received text: '%s'" % msg.data)
+        if msg.data:
+            self.get_logger().info(f"MSG DATA FOUND - PLAYING  {msg.data}")
+            audio = generate(
+                text=msg.data,
+                voice="George - royal and elegant",
+            )
+            play(audio, use_ffmpeg=True)
 
-        # # Call AWS Polly service to synthesize speech
-        # polly_client = self.aws_session.client("polly")
-        # self.get_logger().info("Polly client successfully initialized.")
-        # response = polly_client.synthesize_speech(
-        #     Text=msg.data, OutputFormat="mp3", VoiceId=config.aws_voice_id
-        # )
+            self.get_logger().info("Finished Polly playing.")
+            self.publish_string("feedback finished", self.llm_state_publisher)
+            self.publish_string("listening", self.llm_state_publisher)
 
         # # Save the audio output to a file
         # output_file_path = "/tmp/speech_output.mp3"

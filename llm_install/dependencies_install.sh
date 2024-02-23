@@ -20,9 +20,10 @@ pip install pysocks
 pip install requests
 sudo apt-get install libcanberra-gtk-module libcanberra-gtk3-module -y
 
+pip install whisper
+pip install elevenlabs
+pip install openai
 
-# Install AWS boto3
-pip install boto3
 pip install numpy
 pip install sounddevice
 pip install pydub
