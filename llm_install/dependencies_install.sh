@@ -19,10 +19,13 @@ sudo apt install gnome-terminal -y
 pip install pysocks
 pip install requests
 sudo apt-get install libcanberra-gtk-module libcanberra-gtk3-module -y
+pip install langchain
 
 pip install whisper
 pip install elevenlabs
 pip install openai
+pip install langchain langchainhub langgraph
+pip install -U ragatouille
 
 pip install numpy
 pip install sounddevice

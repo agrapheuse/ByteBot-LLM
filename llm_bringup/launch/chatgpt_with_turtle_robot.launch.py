@@ -43,7 +43,7 @@ def generate_launch_description():
             ),
             Node(
                 package="llm_model",
-                executable="chatgpt",
+                executable="brain",
                 name="chatgpt",
                 output="screen",
             ),
