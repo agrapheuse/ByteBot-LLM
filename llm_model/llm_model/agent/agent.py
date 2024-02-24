@@ -6,11 +6,12 @@ from langchain.chains.openai_functions import create_openai_fn_runnable
 from langgraph.graph import StateGraph, END
 
 class Agent:
-    def __init__(self, tools):
+    def __init__(self, tools, logger):
         self.tools = tools
         self.agent_executor = create_structured_output_runnable(
             PlanExecute, ChatOpenAI(model="gpt-4-turbo-preview", temperature=0)
         )
+        self.logger = logger
         self.planner = self._create_planner()
         self.graph = self._create_graph()
 
@@ -23,7 +24,7 @@ class Agent:
         async for event in self.graph.astream(inputs, config=config):
             for k, v in event.items():
                 if k != "__end__":
-                    node_logger.log(k, v)
+                    self.logger.log(k, v)
 
     def _create_planner(self):
         """
