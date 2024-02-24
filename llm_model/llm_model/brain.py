@@ -8,6 +8,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_agent_executor
 from rclpy.node import Node
 from std_msgs.msg import String
+from .agent import Agent
 
 from .tools import get_tools, read_chat_history
 
@@ -60,19 +61,7 @@ class Brain(Node):
         self.publish_string("listening", self.llm_state_publisher)
         self.publish_string("processing", self.llm_state_publisher)
         tools = get_tools()
-
-        # Get the prompt to use - you can modify this!
-        prompt = hub.pull("hwchase17/openai-functions-agent")
-        # Choose the LLM that will drive the agent
-        llm = ChatOpenAI(model="gpt-4-turbo-preview")
-        # Construct the OpenAI Functions agent
-        agent_runnable = create_openai_functions_agent(llm, tools, prompt)
-
-        agent_executor = create_agent_executor(agent_runnable, tools)
-
-        response = agent_executor.invoke(
-            {"input": msg, "chat_history": read_chat_history()}
-        )
+        agent = Agent(tools)
         self.get_logger().info(response)
 
     def publish_string(self, data, publisher):
