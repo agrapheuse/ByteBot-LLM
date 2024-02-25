@@ -25,8 +25,7 @@ class SteerTool(BaseTool):
         self.publisher = publisher
     
     def _run(
-            self, 
-            steer_input, 
+            self,
             linear_x: float = 0.0, 
             linear_y: float = 0.0, 
             linear_z: float = 0.0, 

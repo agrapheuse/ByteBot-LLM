@@ -4,6 +4,8 @@ from langchain_openai import ChatOpenAI
 from plan import Plan, PlanExecute, Response
 from langchain.chains.openai_functions import create_openai_fn_runnable
 from langgraph.graph import StateGraph, END
+from retriever import Retriever
+import os
 
 class Agent:
     def __init__(self, tools, logger):
@@ -14,12 +16,13 @@ class Agent:
         self.logger = logger
         self.planner = self._create_planner()
         self.graph = self._create_graph()
+        self.rag = self._create_retriever()
 
     def act(self, input_text, node_logger):
         """
         Generate a plan, act on that plan and return the result.
         """
-        config = {"recursion_limit": 50}
+        config = {"recursion_limit": 50},
         inputs = {"input": input_text}
         async for event in self.graph.astream(inputs, config=config):
             for k, v in event.items():
@@ -35,6 +38,11 @@ class Agent:
 This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps. \
 The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
 
+You are the brain of a robot. You can do actions such as moving the robot, speaking and navigating to waypoints. Make use of these and come up with creative ways to express yourself
+Here is an overview of tools at your disposal:
+{tools}
+
+Here is the objective to plan for:
 {objective}"""
         )
         planner = create_structured_output_runnable(
@@ -81,7 +89,7 @@ The result of the final step should be the final answer. Make sure that each ste
             }
 
         async def _plan_step(self, state: PlanExecute):
-            plan = await self.planner.ainvoke({"objective": state["input"]})
+            plan = await self.planner.ainvoke({"objective": state["input"], "tools": self.tools})
             return {"plan": plan.steps}
 
         async def _replan_step(self, state: PlanExecute):
@@ -131,3 +139,10 @@ The result of the final step should be the final answer. Make sure that each ste
         # This compiles it into a LangChain Runnable,
         # meaning you can use it as you would any other runnable
         self.app = workflow.compile()
+
+    def _create_retriever(self):
+        USER_FOLDER = os.path.expanduser("~")
+        INDEX_PATH = os.path.join(USER_FOLDER, "index")
+        if not os.path.exists(INDEX_PATH):
+            return None
+        return Retriever(INDEX_PATH)

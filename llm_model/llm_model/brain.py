@@ -11,7 +11,7 @@ from std_msgs.msg import String
 from .agent import Agent
 
 from geometry_msgs.msg import Twist
-from .tools import get_tools, read_chat_history, SteerTool
+from .tools import get_tools, read_chat_history, SteerTool, SpeechTool
 
 sys.path.append("..")
 print(os.getcwd())
@@ -62,7 +62,8 @@ class Brain(Node):
         self.publish_string("listening", self.llm_state_publisher)
         self.publish_string("processing", self.llm_state_publisher)
         steer_tool = SteerTool(self.create_publisher(Twist, "/cmd_vel", 10))
-        tools = [steer_tool]
+        speech_tool = SpeechTool(self.create_publisher(String, "/llm_input_text_to_audio", 0))
+        tools = [steer_tool, speech_tool]
         agent = Agent(tools, self.get_logger())
         agent.act(msg.data)
 

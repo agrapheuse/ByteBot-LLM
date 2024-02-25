@@ -85,8 +85,6 @@ class AudioOutput(Node):
                 voice="George - royal and elegant",
             )
             play(audio, use_ffmpeg=True)
-
-            self.get_logger().info("Finished Polly playing.")
             self.publish_string("feedback finished", self.llm_state_publisher)
             self.publish_string("listening", self.llm_state_publisher)
 
