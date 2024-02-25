@@ -6,6 +6,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForToolRun,
 )
 from geometry_msgs.msg import Twist
+from rclpy.publisher import Publisher
 
 
 class SpeechInput(BaseModel):
@@ -18,8 +19,10 @@ class SpeechTool(BaseTool):
         "useful for converting text to audio and saying something to the user, use this often to give feedback to the user"
     )
     args_schema: Type[BaseModel] = SpeechInput
+    publisher: Publisher = None
 
     def __init__(self, publisher):
+        super().__init__()
         self.publisher = publisher
 
     def _run(
@@ -35,7 +38,7 @@ class SpeechTool(BaseTool):
         return f"Converting text to audio: {text}"
 
     async def _arun(
-        self, query: str, run_manager: Optional[AsyncCallbackManagerForToolRun] = None
+        self, run_manager: Optional[AsyncCallbackManagerForToolRun] = None
     ) -> str:
         """Use the tool asynchronously."""
         raise NotImplementedError("custom_search does not support async")

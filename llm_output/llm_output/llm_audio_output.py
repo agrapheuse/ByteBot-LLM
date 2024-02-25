@@ -84,6 +84,9 @@ class AudioOutput(Node):
                 text=msg.data,
                 voice="George - royal and elegant",
             )
+            # Save to tmp
+            with open("/tmp/speech_output.mp3", "wb") as file:
+                file.write(audio)
             play(audio, use_ffmpeg=True)
             self.publish_string("feedback finished", self.llm_state_publisher)
             self.publish_string("listening", self.llm_state_publisher)

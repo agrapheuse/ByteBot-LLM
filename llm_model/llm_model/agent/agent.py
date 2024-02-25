@@ -1,11 +1,15 @@
-from langchain.chains.openai_functions import create_structured_output_runnable
+import os
+
+from langchain.chains.openai_functions import (
+    create_openai_fn_runnable,
+    create_structured_output_runnable,
+)
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from plan import Plan, PlanExecute, Response
-from langchain.chains.openai_functions import create_openai_fn_runnable
-from langgraph.graph import StateGraph, END
-from retriever import Retriever
-import os
+from langgraph.graph import END, StateGraph
+from .plan import Plan, PlanExecute, Response
+from .retriever import Retriever
+
 
 class Agent:
     def __init__(self, tools, logger):
@@ -16,18 +20,19 @@ class Agent:
         self.logger = logger
         self.planner = self._create_planner()
         self.graph = self._create_graph()
-        self.rag = self._create_retriever()
+        # self.rag = self._create_retriever()
 
-    def act(self, input_text, node_logger):
+    def act(self, input_text):
         """
         Generate a plan, act on that plan and return the result.
         """
-        config = {"recursion_limit": 50},
+        self.logger.info(f"Agent is acting on input: {input_text}")
         inputs = {"input": input_text}
-        async for event in self.graph.astream(inputs, config=config):
-            for k, v in event.items():
-                if k != "__end__":
-                    self.logger.log(k, v)
+        for event in self.graph.stream(inputs):
+            self.logger.info("event", event)
+            # for k, v in event.items():
+            #     if k != "__end__":
+            #         self.logger.log(k, v)
 
     def _create_planner(self):
         """
@@ -55,7 +60,7 @@ Here is the objective to plan for:
         This function takes in input text and returns a plan to follow.
         """
         replanner_prompt = ChatPromptTemplate.from_template(
-    """For the given objective, come up with a simple step by step plan. \
+            """For the given objective, come up with a simple step by step plan. \
     This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps. \
     The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
 
@@ -69,7 +74,7 @@ Here is the objective to plan for:
     {past_steps}
 
     Update your plan accordingly. If no more steps are needed and you can return to the user, then respond with that. Otherwise, fill out the plan. Only add steps to the plan that still NEED to be done. Do not return previously done steps as part of the plan."""
-    )
+        )
         replanner = create_openai_fn_runnable(
             [Plan, Response],
             ChatOpenAI(model="gpt-4-turbo-preview", temperature=0),
@@ -78,22 +83,29 @@ Here is the objective to plan for:
         return replanner
 
     def _create_graph(self):
-        async def _execute_step(self, state: PlanExecute):
+        def _execute_step(self, state: PlanExecute):
             """
             This function takes in a plan and executes it.
             """
             task = state["plan"][0]
-            agent_response = await self.agent_executor.ainvoke({"input": task, "chat_history": []})
+            agent_response = self.agent_executor.invoke(
+                {"input": task, "chat_history": []}
+            )
             return {
-                "past_steps": (task, agent_response["agent_outcome"].return_values["output"])
+                "past_steps": (
+                    task,
+                    agent_response["agent_outcome"].return_values["output"],
+                )
             }
 
-        async def _plan_step(self, state: PlanExecute):
-            plan = await self.planner.ainvoke({"objective": state["input"], "tools": self.tools})
+        def _plan_step(self, state: PlanExecute):
+            plan = self.planner.invoke(
+                {"objective": state["input"], "tools": self.tools}
+            )
             return {"plan": plan.steps}
 
-        async def _replan_step(self, state: PlanExecute):
-            output = await self.replanner.ainvoke(state)
+        def _replan_step(self, state: PlanExecute):
+            output = self.replanner.invoke(state)
             if isinstance(output, Response):
                 return {"response": output.response}
             else:
@@ -134,11 +146,7 @@ Here is the objective to plan for:
                 False: "agent",
             },
         )
-
-        # Finally, we compile it!
-        # This compiles it into a LangChain Runnable,
-        # meaning you can use it as you would any other runnable
-        self.app = workflow.compile()
+        return workflow.compile()
 
     def _create_retriever(self):
         USER_FOLDER = os.path.expanduser("~")
