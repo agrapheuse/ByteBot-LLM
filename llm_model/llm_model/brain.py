@@ -56,16 +56,16 @@ class Brain(Node):
         Callback function for the LLM input listener.
         This function is called when a message is received on the LLM input topic.
         """
-        self.publish_string("listening", self.llm_state_publisher)
-        self.publish_string("processing", self.llm_state_publisher)
         steer_tool = SteerTool(self.create_publisher(Twist, "/cmd_vel", 10))
         speech_tool = SpeechTool(
-            self.create_publisher(String, "/llm_input_text_to_audio", 0)
+            self.llm_feedback_publisher
         )
         dock_tool = DockTool(self.create_publisher(String, "/dock", 0))
         tools = [steer_tool, speech_tool, dock_tool]
+        # self.llm_feedback_publisher.publish(msg)
         agent = Agent(tools, self.get_logger())
         agent.act(msg.data)
+        self.get_logger().info(f"Spoke: '{msg.data}'")
 
     def publish_string(self, data, publisher):
         """
@@ -85,5 +85,4 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    main()
     main()

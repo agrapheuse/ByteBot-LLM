@@ -21,5 +21,5 @@ ros2 service call /ChatGPT_service llm_interfaces/srv/ChatGPT '{request_text: "L
 ```
 **Reset the turtlesim**
 ```bash
-ros2 service call /ChatGPT_service llm_interfaces/srv/ChatGPT '{request_text: "I want the little turtle to go back to where it started."}'
+ros2 service call /brainllm_interfaces/srv/ChatGPT '{request_text: "I want the little turtle to go back to where it started."}'
 ```

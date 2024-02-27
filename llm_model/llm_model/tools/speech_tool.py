@@ -7,7 +7,7 @@ from langchain.callbacks.manager import (
 )
 from geometry_msgs.msg import Twist
 from rclpy.publisher import Publisher
-
+from std_msgs.msg import String
 
 class SpeechInput(BaseModel):
     text: str = Field(..., description="The text to be converted to audio")
@@ -33,9 +33,9 @@ class SpeechTool(BaseTool):
         """
         Publishes a string message to a topic.
         """
-        self.publisher.publish(text)
-        self.get_logger().info(f"Converting text to audio: {text}")
-        return f"Converting text to audio: {text}"
+        msg = String()
+        msg.data = text
+        self.publisher.publish(msg)
 
     async def _arun(
         self, run_manager: Optional[AsyncCallbackManagerForToolRun] = None

@@ -9,14 +9,17 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from .plan import Plan, PlanExecute, Response
 from .retriever import Retriever
-
+from langchain.agents import AgentExecutor, create_openai_tools_agent
+from langchain import hub
 
 class Agent:
     def __init__(self, tools, logger):
         self.tools = tools
-        self.agent_executor = create_structured_output_runnable(
-            PlanExecute, ChatOpenAI(model="gpt-4-turbo-preview", temperature=0)
+        prompt = hub.pull("hwchase17/openai-tools-agent")
+        agent = create_openai_tools_agent(
+            ChatOpenAI(model="gpt-4-turbo-preview", temperature=0.7), tools, prompt
         )
+        self.agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
         self.logger = logger
         self.planner = self._create_planner()
         self.graph = self._create_graph()
@@ -26,13 +29,27 @@ class Agent:
         """
         Generate a plan, act on that plan and return the result.
         """
+        
         self.logger.info(f"Agent is acting on input: {input_text}")
-        inputs = {"input": input_text}
-        for event in self.graph.stream(inputs):
-            self.logger.info("event", event)
-            # for k, v in event.items():
-            #     if k != "__end__":
-            #         self.logger.log(k, v)
+        from langchain_core.messages import AIMessage, HumanMessage
+        prompt = f"""
+You are an AI Robot, you will be asked questions that you have to answer to or perform actions.
+Always use the speech tool to communicate with the user.
+
+The user input can be mumbled because it froms from speech-to-text, do your best to understand it:
+{input_text}
+"""
+        self.agent_executor.invoke(
+            {
+                "input": prompt
+            }
+        )
+        self.logger.info("Agent has finished acting")
+        # for event in self.graph.stream(inputs):
+        #     self.logger.info("event", event)
+        # for k, v in event.items():
+        #     if k != "__end__":
+        #         self.logger.log(k, v)
 
     def _create_planner(self):
         """

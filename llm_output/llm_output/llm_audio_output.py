@@ -74,22 +74,36 @@ class AudioOutput(Node):
 
     def feedback_for_user_callback(self, msg):
         self.get_logger().info(f"Received text: '{msg.data}'")
+        current_time = datetime.datetime.now()
+        try:
+            with open("/tmp/feedback_log.json", "r") as file:
+                feedback_log = json.load(file)
+        except FileNotFoundError:
+            feedback_log = {}
+
+        if msg.data in feedback_log:
+            last_spoken_time = datetime.datetime.fromisoformat(feedback_log[msg.data])
+            if (current_time - last_spoken_time).total_seconds() < 300:
+                self.get_logger().info("Message recently spoken, skipping...")
+                return
+        feedback_log[msg.data] = current_time.isoformat()
+
+        with open("/tmp/feedback_log.json", "w") as file:
+            json.dump(feedback_log, file)
         # Log and publish state updates
         self.get_logger().info("Finished TTS playback.")
-        self.publish_string("feedback finished", self.llm_state_publisher)
-        self.publish_string("listening", self.llm_state_publisher)
         if msg.data:
             self.get_logger().info(f"MSG DATA FOUND - PLAYING  {msg.data}")
             audio = generate(
-                text=msg.data,
+                text="....... " +msg.data,
                 voice="George - royal and elegant",
             )
             # Save to tmp
             with open("/tmp/speech_output.mp3", "wb") as file:
                 file.write(audio)
-            play(audio, use_ffmpeg=True)
+            os.system("mpv  --audio-device=alsa/hw:1,0 /tmp/speech_output.mp3")
             self.publish_string("feedback finished", self.llm_state_publisher)
-            self.publish_string("listening", self.llm_state_publisher)
+            # self.publish_string("listening", self.llm_state_publisher)
 
         # # Save the audio output to a file
         # output_file_path = "/tmp/speech_output.mp3"

@@ -48,13 +48,8 @@ config = UserConfig()
 class TurtleRobot(Node):
     def __init__(self):
         super().__init__("turtle_robot")
-        # Client for reset
-        self.reset_client = self.create_client(Empty, "/reset")
         # Publisher for cmd_vel
         self.publisher_ = self.create_publisher(Twist, "/turtle1/cmd_vel", 10)
-
-        while not self.reset_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("Service /reset not available, waiting again...")
         # Server for function call
         self.function_call_server = self.create_service(
             ChatGPT, "/ChatGPT_function_call_service", self.function_call_callback
