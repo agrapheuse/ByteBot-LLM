@@ -60,7 +60,7 @@ class Brain(Node):
         speech_tool = SpeechTool(
             self.llm_feedback_publisher
         )
-        dock_tool = DockTool(self.create_publisher(String, "/dock", 0))
+        dock_tool = DockTool(self.create_publisher(Dock, "/dock", 0), self.create_client(Dock, "/undock"))
         tools = [steer_tool, speech_tool, dock_tool]
         # self.llm_feedback_publisher.publish(msg)
         agent = Agent(tools, self.get_logger())

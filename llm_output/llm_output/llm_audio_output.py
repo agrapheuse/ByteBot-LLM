@@ -46,9 +46,11 @@ from elevenlabs import set_api_key, generate, play
 # Global Initialization
 from llm_config.user_config import UserConfig
 
+from gtts import gTTS
+
 config = UserConfig()
 
-
+CHEAP = True
 class AudioOutput(Node):
     def __init__(self):
         super().__init__("audio_output")
@@ -94,26 +96,28 @@ class AudioOutput(Node):
         self.get_logger().info("Finished TTS playback.")
         if msg.data:
             self.get_logger().info(f"MSG DATA FOUND - PLAYING  {msg.data}")
-            audio = generate(
-                text="....... " +msg.data,
-                voice="George - royal and elegant",
-            )
-            # Save to tmp
-            with open("/tmp/speech_output.mp3", "wb") as file:
-                file.write(audio)
-            os.system("mpv  --audio-device=alsa/hw:1,0 /tmp/speech_output.mp3")
+            if CHEAP:
+                self.play_generic_tts(msg.data)
+            else:
+                self.play_tts(msg)
             self.publish_string("feedback finished", self.llm_state_publisher)
             # self.publish_string("listening", self.llm_state_publisher)
 
-        # # Save the audio output to a file
-        # output_file_path = "/tmp/speech_output.mp3"
-        # with open(output_file_path, "wb") as file:
-        #     file.write(response["AudioStream"].read())
-        # # Play the audio output
-        # os.system("mpv" + " " + output_file_path)
-        # self.get_logger().info("Finished Polly playing.")
-        # self.publish_string("feedback finished", self.llm_state_publisher)
-        # self.publish_string("listening", self.llm_state_publisher)
+    def play_generic_tts(self, msg):
+        tts = gTTS(text=msg, lang="en")
+        tts_file = "/tmp/speech_output.mp3"
+        tts.save(tts_file)
+        os.system(f"mpv --audio-device=alsa/hw:1,0 {tts_file}")
+    
+    def play_tts(self, msg):
+        audio = generate(
+                text="....... " +msg.data,
+                voice="George - royal and elegant",
+            )
+        # Save to tmp
+        with open("/tmp/speech_output.mp3", "wb") as file:
+            file.write(audio)
+        os.system("mpv  --audio-device=alsa/hw:1,0 /tmp/speech_output.mp3")
 
     def publish_string(self, string_to_send, publisher_to_use):
         msg = String()
