@@ -6,7 +6,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.retrievers import ContextualCompressionRetriever
 
 USER_FOLDER = os.path.expanduser("~")
-KNOWLEDGE_PATH = os.path.join(USER_FOLDER, "knowledge")
+KNOWLEDGE_PATH = os.path.join(USER_FOLDER,"bytebot", "knowledge", "llm-context")
 class Retriever:
     def __init__(self, knowledge_folder: str = KNOWLEDGE_PATH):
         self.rag = self._create_rag(knowledge_folder)

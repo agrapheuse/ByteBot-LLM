@@ -22,7 +22,7 @@ class SteerInput(BaseModel):
 class SteerTool(BaseTool):
     name = "steer_robot"
     description = (
-        "useful for steering the robot - moving forward, backward, left, right"
+        "useful for steering the robot - moving forward, backward, left, right. the higher the value, the faster the robot moves. use this often to control the robot's movement."
     )
     args_schema: Type[BaseModel] = SteerInput
     publisher: Publisher = None
@@ -66,7 +66,6 @@ class SteerTool(BaseTool):
         twist_msg.angular.z = angular_z
 
         self.publisher.publish(twist_msg)
-        self.get_logger().info(f"Publishing cmd_vel message successfully: {twist_msg}")
         return f"Published cmd_vel message: {twist_msg}"
 
     async def _arun(

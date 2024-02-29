@@ -7,39 +7,41 @@ from langchain.callbacks.manager import (
 from langchain.tools import BaseTool
 from rclpy.publisher import Publisher
 from langchain.pydantic_v1 import BaseModel, Field
+from rclpy.action import ActionClient
+from irobot_create_msgs.action import Dock, Undock
 
 
 class DockInput(BaseModel):
-    to_dock: bool = Field(..., description="True to dock, False to undock")
+    to_dock: int = Field(..., description="0 to undock, 1 to dock")
 
 
 class DockTool(BaseTool):
     name = "dock"
-    description = "Dock or undock the robot to a charging station, useful"
-    publisher_to_dock: Publisher = None
-    publisher_to_undock: Publisher = None
+    description = "Dock or undock the robot from a charging station, useful for recharging the robot or enabling movement"
+    publisher_to_dock: ActionClient = None
+    publisher_to_undock: ActionClient = None
     args_schema: Type[BaseModel] = DockInput
 
-    def __init__(self, publisher_to_dock: Publisher, publisher_to_undock: Publisher):
+    def __init__(self, publisher_to_dock: ActionClient, publisher_to_undock: ActionClient):
         super().__init__()
         self.publisher_to_dock = publisher_to_dock
         self.publisher_to_undock = publisher_to_undock
 
     def _run(
         self,
-        to_dock: bool,
+        to_dock: int,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """
         Publishes a string message to a topic.
         """
-        if to_dock:
-            self.publisher_to_dock.publish({})
-            self.get_logger().info("Docking the robot")
+        if to_dock == 1:
+            dock_goal = Dock.Goal()
+            self.publisher_to_dock.send_goal_async(dock_goal)
             return "Docking the robot"
         else:
-            self.publisher_to_undock.publish({})
-            self.get_logger().info("Undocking the robot")
+            undock_goal = Undock.Goal()
+            self.publisher_to_undock.send_goal_async(undock_goal)
             return "Unocking the robot"
 
     async def _arun(
@@ -47,6 +49,3 @@ class DockTool(BaseTool):
     ) -> str:
         """Use the tool asynchronously."""
         raise NotImplementedError("custom_search does not support async")
-
-    def _to_args_and_kwargs(self, tool_input: Union[str, Dict]) -> Tuple[Tuple, Dict]:
-        return (), {}

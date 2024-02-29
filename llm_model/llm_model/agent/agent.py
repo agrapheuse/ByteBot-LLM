@@ -22,34 +22,48 @@ class Agent:
         self.agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
         self.logger = logger
         self.planner = self._create_planner()
-        self.graph = self._create_graph()
-        # self.rag = self._create_retriever()
+        self.rag = self._create_retriever()
+        if not os.path.exists("/tmp/conversation.txt"):
+            with open("/tmp/conversation.txt", "w") as file:
+                file.write("")
 
     def act(self, input_text):
         """
         Generate a plan, act on that plan and return the result.
         """
-        
+
         self.logger.info(f"Agent is acting on input: {input_text}")
         from langchain_core.messages import AIMessage, HumanMessage
-        prompt = f"""
+
+        # Create a plan
+        plan = self.planner.invoke(
+            {"objective": input_text, "tools": self.tools}
+        )
+
+        conversation_so_far = self.retrieve_conversation_so_far()
+        context = self.rag.retrieve(input_text)
+        general_prompt = f"""
 You are an AI Robot, you will be asked questions that you have to answer to or perform actions.
 Always use the speech tool to communicate with the user.
 
+{conversation_so_far}
+
 The user input can be mumbled because it froms from speech-to-text, do your best to understand it:
 {input_text}
+
+Here is some possible context that you can use to answer the question:
+{context}
+
+Current Step:
+
 """
-        self.agent_executor.invoke(
-            {
-                "input": prompt
-            }
-        )
-        self.logger.info("Agent has finished acting")
-        # for event in self.graph.stream(inputs):
-        #     self.logger.info("event", event)
-        # for k, v in event.items():
-        #     if k != "__end__":
-        #         self.logger.log(k, v)
+        self.logger.info(f"Agent has created plan: {plan}")
+        for step in plan.steps:
+            self.logger.info(f"Agent is executing step: {step}")
+            result = self.agent_executor.invoke({"input": general_prompt + step})
+            self.logger.info(f"Agent has finished step {step}")
+        with open("/tmp/conversation.txt", "a") as file:
+            file.write(f"User: {input_text}\nAgent: {result}\n")
 
     def _create_planner(self):
         """
@@ -65,7 +79,10 @@ Here is an overview of tools at your disposal:
 {tools}
 
 Here is the objective to plan for:
-{objective}"""
+{objective}
+
+IMPORTANT! There should be as little steps as possible. Max 3
+"""
         )
         planner = create_structured_output_runnable(
             Plan, ChatOpenAI(model="gpt-4-turbo-preview", temperature=0), planner_prompt
@@ -98,76 +115,19 @@ Here is the objective to plan for:
             replanner_prompt,
         )
         return replanner
-
-    def _create_graph(self):
-        def _execute_step(self, state: PlanExecute):
-            """
-            This function takes in a plan and executes it.
-            """
-            task = state["plan"][0]
-            agent_response = self.agent_executor.invoke(
-                {"input": task, "chat_history": []}
-            )
-            return {
-                "past_steps": (
-                    task,
-                    agent_response["agent_outcome"].return_values["output"],
-                )
-            }
-
-        def _plan_step(self, state: PlanExecute):
-            plan = self.planner.invoke(
-                {"objective": state["input"], "tools": self.tools}
-            )
-            return {"plan": plan.steps}
-
-        def _replan_step(self, state: PlanExecute):
-            output = self.replanner.invoke(state)
-            if isinstance(output, Response):
-                return {"response": output.response}
-            else:
-                return {"plan": output.steps}
-
-        def _should_end(self, state: PlanExecute):
-            if state["response"]:
-                return True
-            else:
-                return False
-
-        workflow = StateGraph(PlanExecute)
-
-        # Add the plan node
-        workflow.add_node("planner", _plan_step)
-
-        # Add the execution step
-        workflow.add_node("agent", _execute_step)
-
-        # Add a replan node
-        workflow.add_node("replan", _replan_step)
-
-        workflow.set_entry_point("planner")
-
-        # From plan we go to agent
-        workflow.add_edge("planner", "agent")
-
-        # From agent, we replan
-        workflow.add_edge("agent", "replan")
-
-        workflow.add_conditional_edges(
-            "replan",
-            # Next, we pass in the function that will determine which node is called next.
-            _should_end,
-            {
-                # If `tools`, then we call the tool node.
-                True: END,
-                False: "agent",
-            },
-        )
-        return workflow.compile()
+    
+    def retrieve_conversation_so_far(self):
+        """
+        Retrieve the conversation so far from the graph.
+        """
+        # read from tmp
+        conversation_so_far = ""
+        with open("/tmp/conversation.txt", "r") as file:
+            conversation_so_far = file.read()
+        return conversation_so_far
 
     def _create_retriever(self):
         USER_FOLDER = os.path.expanduser("~")
         INDEX_PATH = os.path.join(USER_FOLDER, "index")
-        if not os.path.exists(INDEX_PATH):
-            return None
-        return Retriever(INDEX_PATH)
+        retriever = Retriever(INDEX_PATH)
+        return retriever

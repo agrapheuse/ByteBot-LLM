@@ -8,10 +8,11 @@ from std_msgs.msg import String
 
 from .agent import Agent
 from .tools import *
+from rclpy.action import ActionClient
 
 sys.path.append("..")
 print(os.getcwd())
-from irobot_create_msgs.action import Dock
+from irobot_create_msgs.action import Dock, Undock
 
 
 class Brain(Node):
@@ -60,7 +61,9 @@ class Brain(Node):
         speech_tool = SpeechTool(
             self.llm_feedback_publisher
         )
-        dock_tool = DockTool(self.create_publisher(Dock, "/dock", 0), self.create_client(Dock, "/undock"))
+        dock = ActionClient(self, Dock, "/dock")
+        un_dock = ActionClient(self, Dock, "/undock")
+        dock_tool = DockTool(dock, un_dock)
         tools = [steer_tool, speech_tool, dock_tool]
         # self.llm_feedback_publisher.publish(msg)
         agent = Agent(tools, self.get_logger())
