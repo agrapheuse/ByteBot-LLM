@@ -1,51 +1,46 @@
-from typing import Optional, Union, Dict, Tuple, Type
+from typing import Optional, Type
 
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from langchain.tools import BaseTool
-from rclpy.publisher import Publisher
 from langchain.pydantic_v1 import BaseModel, Field
-from rclpy.action import ActionClient
-from irobot_create_msgs.action import Dock, Undock
+from langchain.tools import BaseTool
+from .turtlebot4_navigation import Turtlebot4Navigator
 
 
 class DockInput(BaseModel):
-    to_dock: int = Field(..., description="0 to undock, 1 to dock")
+    to_dock: bool = Field(..., description="True to dock, False to undock")
 
 
 class DockTool(BaseTool):
     name = "dock"
-    description = "Dock or undock the robot from a charging station, useful for recharging the robot or enabling movement"
-    publisher_to_dock: ActionClient = None
-    publisher_to_undock: ActionClient = None
+    description = ("Dock or undock the robot from a charging station, useful for recharging the robot or enabling "
+                   "movement. The dock can be referred to as home or maybe even misinterpreted as 'dog' or something "
+                   "similar by the "
+                   "speech to text.")
     args_schema: Type[BaseModel] = DockInput
+    navigator: Turtlebot4Navigator = None
 
-    def __init__(self, publisher_to_dock: ActionClient, publisher_to_undock: ActionClient):
+    def __init__(self, navigator):
         super().__init__()
-        self.publisher_to_dock = publisher_to_dock
-        self.publisher_to_undock = publisher_to_undock
+        self.navigator = navigator
 
     def _run(
         self,
-        to_dock: int,
+        to_dock: bool,
         run_manager: Optional[CallbackManagerForToolRun] = None,
-    ) -> str:
+    ):
         """
         Publishes a string message to a topic.
         """
-        if to_dock == 1:
-            dock_goal = Dock.Goal()
-            self.publisher_to_dock.send_goal_async(dock_goal)
-            return "Docking the robot"
+        if to_dock:
+            self.navigator.dock()
         else:
-            undock_goal = Undock.Goal()
-            self.publisher_to_undock.send_goal_async(undock_goal)
-            return "Unocking the robot"
+            self.navigator.undock()
 
     async def _arun(
         self, run_manager: Optional[AsyncCallbackManagerForToolRun] = None
     ) -> str:
         """Use the tool asynchronously."""
-        raise NotImplementedError("custom_search does not support async")
+        pass

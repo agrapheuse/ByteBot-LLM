@@ -70,9 +70,8 @@ class AudioInput(Node):
         self.publish_string("llm_audio_input", self.initialization_publisher)
 
     def state_listener_callback(self, msg):
-        if msg.data == "listening":
-            self.get_logger().info(f"STATE: {msg.data}")
-            self.action_function_listening()
+        self.get_logger().info(f"STATE: {msg.data}")
+        # self.action_function_listening()
 
     def action_function_listening(self):
         # Recording settings

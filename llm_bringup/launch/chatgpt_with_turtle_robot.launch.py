@@ -53,11 +53,5 @@ def generate_launch_description():
                 name="llm_audio_output",
                 output="screen",
             ),
-            Node(
-                package="llm_robot",
-                executable="turtle_robot",
-                name="turtle_robot",
-                output="screen",
-            ),
         ]
     )

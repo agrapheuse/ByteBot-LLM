@@ -1,12 +1,33 @@
-from ragatouille import RAGPretrainedModel
 import os
+
 from langchain_community.document_loaders import UnstructuredFileLoader
-from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.retrievers import ContextualCompressionRetriever
+from langchain_openai import OpenAIEmbeddings
+from langchain_text_splitters import CharacterTextSplitter
 
 USER_FOLDER = os.path.expanduser("~")
-KNOWLEDGE_PATH = os.path.join(USER_FOLDER,"bytebot", "knowledge", "llm-context")
+KNOWLEDGE_PATH = os.path.join(USER_FOLDER, "bytebot", "knowledge", "llm-context")
+if not os.path.exists(KNOWLEDGE_PATH):
+    os.makedirs(KNOWLEDGE_PATH)
+    # Make a file with Asimov's laws
+    with open(os.path.join(KNOWLEDGE_PATH, "laws.txt"), "w") as file:
+        file.write(
+            "1. A robot may not injure a human being or, through inaction, allow a human being to come to harm.\n"
+            "2. A robot must obey the orders given it by human beings except where such orders would conflict with the First Law.\n"
+            "3. A robot must protect its own existence as long as such protection does not conflict with the First or Second Law."
+        )
+    with open(os.path.join(KNOWLEDGE_PATH, "tb4project.txt"), "w") as file:
+        file.write(
+            """
+            ByteBot is a team of 3 students, Filip Nowak, Elina van der Taelen and Noah Diderich.
+            We came together with a vision of making a turtlebot have a human-like conversation with a user.
+            We are using Python, OpenCV, ROS2, and GPT-4 to make this happen.
+            
+            Our supervisors are Geert de Paepe and Levi Slap
+            """
+        )
+
+
 class Retriever:
     def __init__(self, knowledge_folder: str = KNOWLEDGE_PATH):
         self.rag = self._create_rag(knowledge_folder)
@@ -14,36 +35,34 @@ class Retriever:
     def retrieve(self, query: str):
         """
         Retrieves a response for the given query.
-        
+
         Parameters:
         - query: The input query.
-        
+
         Returns:
         The response to the query.
         """
         # Load the RAG model
-        return self.rag.get_relevant_documents(query)
+        print(f"Retrieving response for query: {query}")
+        documents = self.rag.get_relevant_documents(query)
+        return documents
 
     def _create_rag(self, knowledge_folder: str):
-        RAG = RAGPretrainedModel.from_pretrained("colbert-ir/colbertv2.0")
         files = os.listdir(knowledge_folder)
         files = [os.path.join(knowledge_folder, file) for file in files]
+        print(f"Loading {len(files)} files from {knowledge_folder} {files }")
         loader = UnstructuredFileLoader(files, mode="elements")
         texts = loader.load()
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        texts = text_splitter.split_documents(texts)
+        embeddings = OpenAIEmbeddings()
+        db = FAISS.from_documents(texts, embeddings).as_retriever()
+        return db
 
-        model_name = "BAAI/bge-small-en"
-        model_kwargs = {"device": "cpu"}
-        encode_kwargs = {"normalize_embeddings": True}
-        hf = HuggingFaceBgeEmbeddings(
-            model_name=model_name,
-            model_kwargs=model_kwargs,
-            encode_kwargs=encode_kwargs,
-        )
-        retriever = FAISS.from_documents(texts, hf).as_retriever(
-            search_kwargs={"k": 20}
-        )
-        compression_retriever = ContextualCompressionRetriever(
-            base_compressor=RAG.as_langchain_document_compressor(),
-            base_retriever=retriever,
-        )
-        return compression_retriever
+
+if __name__ == "__main__":
+    print("Testing the retriever")
+    retriever = Retriever()
+    query = "What is the first law of robotics?"
+    response = retriever.retrieve(query)
+    print(response)
