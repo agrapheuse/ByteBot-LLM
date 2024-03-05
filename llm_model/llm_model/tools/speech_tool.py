@@ -24,7 +24,8 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from elevenlabs import set_api_key, generate, play
+from elevenlabs import set_api_key, generate, play, Voice
+from elevenlabs.client import ElevenLabs
 
 # Global Initialization
 from llm_config.user_config import UserConfig
@@ -34,6 +35,10 @@ from gtts import gTTS
 config = UserConfig()
 
 CHEAP = True
+flag_file_path = "/tmp/voice_cloning_flag.txt"
+api_key = os.getenv("ELEVEN_API_KEY")
+client = ElevenLabs(api_key=api_key)
+
 class SpeechInput(BaseModel):
     text: str = Field(..., description="The text to be converted to audio")
 
@@ -101,10 +106,23 @@ class SpeechTool(BaseTool):
         os.system(f"mpv --audio-device=alsa/hw:1,0 {tts_file}")
 
     def play_tts(self, msg):
-        audio = generate(
-            text="....... " + msg,
-            voice="George - royal and elegant",
-        )
+        # if flag_file_path exists, use the cloned voice
+        if os.path.exists(flag_file_path):
+            with open(flag_file_path, "r") as f:
+                voice_id = f.read()
+            audio = generate(
+                text="....... " + msg,
+                voice=Voice(
+                    voice_id=voice_id,
+                    settings=client.voices.get_settings(voice_id),
+                ),
+            )
+        # otherwise, use the default voice
+        else:
+            audio = generate(
+                text="....... " + msg,
+                voice="George - royal and elegant",
+            )
         # Save to tmp
         with open("/tmp/speech_output.mp3", "wb") as file:
             file.write(audio)
