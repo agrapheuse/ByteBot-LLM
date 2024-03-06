@@ -6,8 +6,9 @@ from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from .tools import DockTool, SpeechTool, SteerTool, Turtlebot4Navigator, DanceTool, NavigateTool
+from .tools import DockTool, SpeechTool, SteerTool, Turtlebot4Navigator, DanceTool, NavigateTool, VoiceCloningTool
 from .agent import Agent
+import time
 
 sys.path.append("..")
 print(os.getcwd())
@@ -64,7 +65,6 @@ class Brain(Node):
         self.navigation_publisher = self.create_publisher(
             String, "/pose_listener", 0
         )
-        
 
         self.steer_publisher = self.create_publisher(Twist, "/cmd_vel", 10)
         self.navigator = Turtlebot4Navigator()
@@ -117,10 +117,51 @@ class Brain(Node):
             self.llm_feedback_publisher
         )
         dock_tool = DockTool(self.navigator)  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
-        # navigate_tool = NavigateTool(self.navigation_publisher)
+        navigate_tool = NavigateTool(self.navigation_publisher)
         dance_tool = DanceTool()
-        tools = [steer_tool, speech_tool, dance_tool, dock_tool]
+        voice_cloning_tool = VoiceCloningTool()
+        from langchain.tools import HumanInputRun
+        human_input = HumanInputRun(input_func=self.get_human_input)
+
+        tools = [steer_tool, speech_tool, dance_tool, dock_tool, voice_cloning_tool, navigate_tool, human_input]
         return tools
+
+    def get_human_input(self, secs=5, timeout=30):
+        """
+        Get human input from the user, with an improved performance approach.
+        """
+        TRANSCRIPTION_LOG = os.path.join(
+            os.expanduser("~"), "bytebot", "knowledge", "voice.txt"
+        )
+        TRANSCRIPTION_MARKER = "===TRANSCRIPTION==="
+        start_time = time.time()
+
+        # Initialize transcription log
+        with open(TRANSCRIPTION_LOG, "w") as f:
+            f.write(TRANSCRIPTION_MARKER + "\n")
+
+        # Loop until input is captured or timeout
+        while True:
+            # Check for timeout
+            if time.time() - start_time > timeout:
+                print("Timeout waiting for human input.")
+                return None
+
+            time.sleep(secs)
+            try:
+                with open(TRANSCRIPTION_LOG, "r") as f:
+                    transcription = f.read()
+                    if TRANSCRIPTION_MARKER in transcription:
+                        content_after_marker = transcription.split(
+                            TRANSCRIPTION_MARKER
+                        )[1].strip()
+                        if content_after_marker.endswith(".."):
+                            return content_after_marker[:-2].strip()
+            except FileNotFoundError:
+                print(f"File {TRANSCRIPTION_LOG} not found.")
+                break
+
+        return None
 
 
 def main(args=None):

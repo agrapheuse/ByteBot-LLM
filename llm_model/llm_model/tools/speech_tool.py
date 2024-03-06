@@ -24,7 +24,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from elevenlabs import set_api_key, generate, play, Voice
+from elevenlabs import generate, play, Voice
 from elevenlabs.client import ElevenLabs
 
 # Global Initialization
@@ -36,7 +36,7 @@ config = UserConfig()
 
 CHEAP = True
 flag_file_path = "/tmp/voice_cloning_flag.txt"
-api_key = os.getenv("ELEVEN_API_KEY")
+api_key = "c099a9d746f0d3f8ad573e47223b85a8"
 client = ElevenLabs(api_key=api_key)
 
 class SpeechInput(BaseModel):
@@ -113,6 +113,7 @@ class SpeechTool(BaseTool):
             audio = generate(
                 text="....... " + msg,
                 voice=Voice(
+                    api_key=api_key,
                     voice_id=voice_id,
                     settings=client.voices.get_settings(voice_id),
                 ),

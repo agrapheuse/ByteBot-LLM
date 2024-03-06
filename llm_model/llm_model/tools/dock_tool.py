@@ -38,6 +38,8 @@ class DockTool(BaseTool):
             self.navigator.dock()
         else:
             self.navigator.undock()
+        
+        return "Docking or undocking the robot"
 
     async def _arun(
         self, run_manager: Optional[AsyncCallbackManagerForToolRun] = None

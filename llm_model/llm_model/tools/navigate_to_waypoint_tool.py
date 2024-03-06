@@ -10,7 +10,7 @@ from langchain.tools import BaseTool
 from .turtlebot4_navigation import Turtlebot4Navigator, TurtleBot4Directions
 from rclpy.publisher import Publisher
 from std_msgs.msg import String
-waypoints = "corner, dock, undock"
+waypoints = "corner, patrol, sleep"
 # with open("waypoints.json") as f:
 #     waypoints = json.load(f)
 

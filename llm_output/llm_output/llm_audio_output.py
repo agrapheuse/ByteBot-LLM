@@ -41,7 +41,8 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from elevenlabs import set_api_key, generate, play
+from elevenlabs import generate, play
+from elevenlabs.client import ElevenLabs
 
 # Global Initialization
 from llm_config.user_config import UserConfig
@@ -51,6 +52,8 @@ from gtts import gTTS
 config = UserConfig()
 
 CHEAP = True
+api_key = os.getenv("ELEVENLABS_API_KEY")
+client = ElevenLabs(api_key=api_key)
 class AudioOutput(Node):
     def __init__(self):
         super().__init__("audio_output")
@@ -59,9 +62,6 @@ class AudioOutput(Node):
         self.initialization_publisher = self.create_publisher(
             String, "/llm_initialization_state", 0
         )
-
-        # eleven labs
-        set_api_key(os.environ["ELEVENLABS_API_KEY"])
 
         # LLM state publisher
         self.llm_state_publisher = self.create_publisher(String, "/llm_state", 0)
