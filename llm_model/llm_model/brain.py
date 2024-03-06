@@ -116,10 +116,10 @@ class Brain(Node):
         speech_tool = SpeechTool(
             self.llm_feedback_publisher
         )
-        # dock_tool = DockTool(self.navigator)  USE NOAH'S DOCK TOOL
-        navigate_tool = NavigateTool(self.navigation_publisher)
+        dock_tool = DockTool(self.navigator)  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
+        # navigate_tool = NavigateTool(self.navigation_publisher)
         dance_tool = DanceTool()
-        tools = [steer_tool, speech_tool, dance_tool, navigate_tool]
+        tools = [steer_tool, speech_tool, dance_tool, dock_tool]
         return tools
 
 
