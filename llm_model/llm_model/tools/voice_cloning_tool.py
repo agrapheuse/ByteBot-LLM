@@ -22,7 +22,7 @@ class VoiceCloningTool(BaseTool):
     description = "Asks the participant to record a voice sample. It saves the sample in tmp and then clones the voice using the ElevenLabs Python SDK. It saves a flag to a file to indicate that another tool needs to use the new voice. When finished, it says something to confirm the process is complete."
 
     def __init__(self):
-        super().__init__()
+        super().__init__(name=self.name, description=self.description)
 
     def record_audio(self):
         # Record from the microphone
@@ -68,7 +68,7 @@ class VoiceCloningTool(BaseTool):
             f.write(cloned_voice_id)
 
     def _run(self):
-        # self.record_audio()
+        self.record_audio()
         cloned_voice_id = self.clone_voice()
         if cloned_voice_id:
             self.save_flag(cloned_voice_id)
