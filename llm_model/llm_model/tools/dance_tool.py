@@ -1,14 +1,14 @@
-from typing import Optional, Union, Dict, Tuple, Type
+import subprocess
+from typing import Dict, Optional, Tuple, Union
 
+import rclpy
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-import rclpy
 from langchain.tools import BaseTool
 
 from ._dance_helper import *
-import subprocess
 
 
 class DanceTool(BaseTool):
@@ -107,9 +107,15 @@ class DanceTool(BaseTool):
         try:
             dance_choreographer = DanceChoreographer(DANCE_SEQUENCE)
             dance_publisher = DanceCommandPublisher(dance_choreographer)
-
-            subprocess.Popen(["mpv", "--audio-device=alsa/hw:1,0", "https://www.youtube.com/watch?v=eSBybJGZoCU", "--no-video"])
-            # TODO: Maybe create another node for playing music?
+            song_link = self._get_random_song_link()
+            subprocess.Popen(
+                [
+                    "mpv",
+                    "--audio-device=alsa/hw:1,0",
+                    song_link,
+                    "--no-video",
+                ]
+            )
             rclpy.spin(dance_publisher)
         except FinishedDance:
             print("Finished Dance")
@@ -122,3 +128,16 @@ class DanceTool(BaseTool):
 
     def _to_args_and_kwargs(self, tool_input: Union[str, Dict]) -> Tuple[Tuple, Dict]:
         return (), {}
+
+    def _get_random_song_link(self):
+        import random
+
+        songs = [
+            "https://www.youtube.com/watch?v=sFZjqVnWBhc",  # Robot Rock
+            "https://www.youtube.com/watch?v=eSBybJGZoCU",  # Pocket Calculator
+            "https://youtu.be/7YGXDYWCyoY?si=h16kWwxKe-D8Xcu_&t=171",  # Synthetic God
+            "https://www.youtube.com/watch?v=aoBniaBMLGk", # Future Behold
+        ]
+        # Choose a random song
+        index = random.randint(0, len(songs) - 1)
+        return songs[index]
