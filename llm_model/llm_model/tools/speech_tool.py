@@ -5,6 +5,10 @@ from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
+import shutil
+import subprocess
+from typing import Iterator
+
 from geometry_msgs.msg import Twist
 from rclpy.publisher import Publisher
 from std_msgs.msg import String
@@ -24,7 +28,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from elevenlabs import generate, play, Voice
+from elevenlabs import generate, play, Voice, stream
 from elevenlabs.client import ElevenLabs
 
 # Global Initialization
@@ -91,8 +95,6 @@ class SpeechTool(BaseTool):
 
         with open("/tmp/feedback_log.json", "w") as file:
             json.dump(feedback_log, file)
-        # Log and publish state updates
-        os.system("killall mpv")
         if msg:
             if CHEAP:
                 self.play_generic_tts(msg)
@@ -124,7 +126,27 @@ class SpeechTool(BaseTool):
                 text="....... " + msg,
                 voice="George - royal and elegant",
             )
-        # Save to tmp
-        with open("/tmp/speech_output.mp3", "wb") as file:
-            file.write(audio)
-        os.system("mpv  --audio-device=alsa/hw:1,0 /tmp/speech_output.mp3")
+        
+        self._stream(audio)
+    
+    def _stream(self, audio_stream: Iterator[bytes]) -> bytes:
+        mpv_command = ["mpv", "--no-cache", "--no-terminal", "--", "fd://0", "--audio-device=alsa/hw:1,0"]
+        mpv_process = subprocess.Popen(
+            mpv_command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        audio = b""
+
+        for chunk in audio_stream:
+            if chunk is not None:
+                mpv_process.stdin.write(chunk)  # type: ignore
+                mpv_process.stdin.flush()  # type: ignore
+                audio += chunk
+        if mpv_process.stdin:
+            mpv_process.stdin.close()
+        mpv_process.wait()
+
+        return audio

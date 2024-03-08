@@ -6,9 +6,18 @@ from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from .tools import DockTool, SpeechTool, SteerTool, Turtlebot4Navigator, DanceTool, NavigateTool, VoiceCloningTool
+from .tools import (
+    DockTool,
+    SpeechTool,
+    SteerTool,
+    Turtlebot4Navigator,
+    DanceTool,
+    NavigateTool,
+    VoiceCloningTool,
+)
 from .agent import Agent
 import time
+import json
 
 sys.path.append("..")
 print(os.getcwd())
@@ -62,9 +71,7 @@ class Brain(Node):
         )
 
         # Navigation publisher
-        self.navigation_publisher = self.create_publisher(
-            String, "/pose_listener", 0
-        )
+        self.navigation_publisher = self.create_publisher(String, "/pose_listener", 0)
 
         self.steer_publisher = self.create_publisher(Twist, "/cmd_vel", 10)
         self.navigator = Turtlebot4Navigator()
@@ -88,8 +95,9 @@ class Brain(Node):
         Callback function for the plan listener.
         This function is called when a message is received on the plan topic.
         """
-        self.get_logger().info(f"Received plan: {msg.data}")
-        self.agent.act_from_plan(msg.data)
+        plan = json.loads(msg.data)
+        self.get_logger().info(f"Plan: {plan['plan']}")
+        self.agent.act_from_plan(plan)
 
     def tool_callback(self, msg):
         """
@@ -113,54 +121,57 @@ class Brain(Node):
         Returns the tools that the agent can use.
         """
         steer_tool = SteerTool(self.steer_publisher)
-        speech_tool = SpeechTool(
-            self.llm_feedback_publisher
-        )
-        dock_tool = DockTool(self.navigator)  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
+        speech_tool = SpeechTool(self.llm_feedback_publisher)
+        dock_tool = DockTool(
+            self.navigator
+        )  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
         navigate_tool = NavigateTool(self.navigation_publisher)
         dance_tool = DanceTool()
         # voice_cloning_tool = VoiceCloningTool()
         from langchain_community.tools import HumanInputRun
-        human_input = HumanInputRun(input_func=self.get_human_input)
 
-        tools = [steer_tool, speech_tool, dance_tool, dock_tool, navigate_tool, human_input]
+        human_input = HumanInputRun(
+            input_func=self.get_human_input,
+            description="Get human input, useful for gathering information from the user. Use this to get input from the user or people around them. Doesn't require any parameters.  You are a robot, if you speak, you will be heard IMPORTANT! Use the speech tool before this tool to give feedback to the user.",
+        )
+
+        tools = [
+            steer_tool,
+            speech_tool,
+            dance_tool,
+            dock_tool,
+            navigate_tool,
+            human_input,
+        ]
         return tools
 
     def get_human_input(self, secs=5, timeout=30):
-        """
-        Get human input from the user, with an improved performance approach.
-        """
-        os.system("mpv  --audio-device=alsa/hw:1,0 ~/bytebot/ping.mp3")
-        TRANSCRIPTION_LOG = os.path.join(
-            os.expanduser("~"), "bytebot", "knowledge", "voice.txt"
-        )
-        TRANSCRIPTION_MARKER = "===TRANSCRIPTION==="
+        notification_sound = os.path.expanduser("~/bytebot/ping.mp3")
+        transcription_log_path = os.path.expanduser("~/bytebot/knowledge/voice.txt")
+        transcription_marker = "===TRANSCRIPTION==="
         start_time = time.time()
 
-        # Initialize transcription log
-        with open(TRANSCRIPTION_LOG, "w") as f:
-            f.write(TRANSCRIPTION_MARKER + "\n")
+        with open(transcription_log_path, "w") as file:
+            file.write(transcription_marker + "\n")
+        self.get_logger().info("Listening for human input. STATE FILE MARKED")
+        os.system(
+            f"mpv --audio-device=alsa/hw:1,0 {notification_sound} >/dev/null 2>&1 &"
+        )
 
-        # Loop until input is captured or timeout
-        while True:
-            # Check for timeout
-            if time.time() - start_time > timeout:
-                print("Timeout waiting for human input.")
-                return None
-
+        while time.time() - start_time <= timeout:
             time.sleep(secs)
             try:
-                with open(TRANSCRIPTION_LOG, "r") as f:
-                    transcription = f.read()
-                    if TRANSCRIPTION_MARKER in transcription:
-                        content_after_marker = transcription.split(
-                            TRANSCRIPTION_MARKER
-                        )[1].strip()
-                        if content_after_marker.endswith(".."):
-                            return content_after_marker[:-2].strip()
+                with open(transcription_log_path, "r") as file:
+                    transcription = file.read()
+                content_after_marker = transcription.split(transcription_marker)[
+                    -1
+                ].strip()
+                if content_after_marker.endswith(".."):
+                    return content_after_marker[:-2].strip()
             except Exception as e:
                 print(f"Error reading transcription log: {e}")
 
+        print("Timeout waiting for human input.")
         return None
 
 
