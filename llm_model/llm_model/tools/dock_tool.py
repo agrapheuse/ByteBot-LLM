@@ -16,7 +16,7 @@ class DockInput(BaseModel):
 class DockTool(BaseTool):
     name = "dock"
     description = ("Dock or undock the robot from a charging station, useful for recharging the robot or enabling "
-                   "movement. The dock can be referred to as home or maybe even misinterpreted as 'dog' or something "
+                   "movement. The dock can be referred to as home, waking up or going to sleep or maybe even misinterpreted as 'dog' or something "
                    "similar by the "
                    "speech to text.")
     args_schema: Type[BaseModel] = DockInput

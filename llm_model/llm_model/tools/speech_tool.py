@@ -9,9 +9,7 @@ import shutil
 import subprocess
 from typing import Iterator
 
-from geometry_msgs.msg import Twist
 from rclpy.publisher import Publisher
-from std_msgs.msg import String
 import datetime
 import json
 import requests
@@ -22,11 +20,6 @@ import os
 # Audio recording related
 import sounddevice as sd
 from scipy.io.wavfile import write
-
-# ROS related
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import String
 
 from elevenlabs import generate, play, Voice, stream
 from elevenlabs.client import ElevenLabs
@@ -95,6 +88,7 @@ class SpeechTool(BaseTool):
 
         with open("/tmp/feedback_log.json", "w") as file:
             json.dump(feedback_log, file)
+        os.system('killall mpv')
         if msg:
             if CHEAP:
                 self.play_generic_tts(msg)
@@ -119,16 +113,23 @@ class SpeechTool(BaseTool):
                     voice_id=voice_id,
                     settings=client.voices.get_settings(voice_id),
                 ),
+                stream=True,
             )
         # otherwise, use the default voice
         else:
             audio = generate(
+                api_key=api_key,
                 text="....... " + msg,
-                voice="George - royal and elegant",
+                voice=Voice(
+                    api_key=api_key,
+                    voice_id="DxwyQfgZrGyVfTtqkF2O",
+                    settings=client.voices.get_settings("DxwyQfgZrGyVfTtqkF2O"),
+                ),
+                stream=True,
             )
-        
+
         self._stream(audio)
-    
+
     def _stream(self, audio_stream: Iterator[bytes]) -> bytes:
         mpv_command = ["mpv", "--no-cache", "--no-terminal", "--", "fd://0", "--audio-device=alsa/hw:1,0"]
         mpv_process = subprocess.Popen(
@@ -150,3 +151,7 @@ class SpeechTool(BaseTool):
         mpv_process.wait()
 
         return audio
+
+if __name__ == "__main__":
+    tool = SpeechTool(None)
+    tool._run("Hello, I am Adam")

@@ -53,6 +53,7 @@ class Agent:
         # context = self.rag.retrieve(input_text)
         general_prompt = f"""
 You are an AI Robot, you will be asked questions that you have to answer to or perform actions.
+Max 30 words.
 Always use the speech tool to communicate with the user. Do not repeat the user's input, just respond to it.
 
 CONVERSATION SO FAR:
@@ -73,7 +74,7 @@ Current Step:
         self.logger.info(f"Plan received: {plan}")
         general_prompt = f"""
         You are a superhuman robot that has access to a variety of tools. You can use these tools to accomplish tasks.
-        Use space language to communicate with the user.
+        Max 30 words.
         The user has passed in a plan of the following steps:
         {plan}
         
@@ -105,12 +106,9 @@ Current Step:
 This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps. \
 The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
 
-You are the brain of a robot. You can do actions such as moving the robot, speaking and navigating to waypoints. Make use of these and come up with creative ways to express yourself
 
 # Here is an overview of tools at your disposal:
 {tools}
-
-TIP: You should do your best to blend in among humans. You should not reveal that you are a robot. Use emotions and human-like language. Have a slight superiority complex, but don't be too arrogant.
 
 # Here is the objective to plan for:
 {objective}
@@ -119,7 +117,7 @@ TIP: You should do your best to blend in among humans. You should not reveal tha
 {context}
 
 TIP: The objective can be a bit mumbled since it is coming from a flawed speech to text system. If you don't understand it, ask for clarification.
-IMPORTANT! There should be as little steps as possible. Max 3, usually 1.
+IMPORTANT! There should be as little steps as possible. Usually 1-3 but can be more.
 """
         )
         planner = create_structured_output_runnable(
