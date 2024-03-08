@@ -17,7 +17,7 @@ class Agent:
         self.tools = tools
         prompt = hub.pull("hwchase17/openai-tools-agent")
         agent = create_openai_tools_agent(
-            ChatOpenAI(model="gpt-4-turbo-preview", temperature=0.7), tools, prompt
+            ChatOpenAI(model="gpt-4-turbo-preview", temperature=0.7), tools, prompt,
         )
         self.agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
         self.logger = logger

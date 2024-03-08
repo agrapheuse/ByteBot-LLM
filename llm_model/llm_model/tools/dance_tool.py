@@ -136,7 +136,8 @@ class DanceTool(BaseTool):
             "https://www.youtube.com/watch?v=sFZjqVnWBhc",  # Robot Rock
             "https://www.youtube.com/watch?v=eSBybJGZoCU",  # Pocket Calculator
             "https://youtu.be/7YGXDYWCyoY?si=h16kWwxKe-D8Xcu_&t=171",  # Synthetic God
-            "https://www.youtube.com/watch?v=aoBniaBMLGk", # Future Behold
+            "https://www.youtube.com/watch?v=aoBniaBMLGk",  # Future Behold
+            "https://youtu.be/bcR2jiKNNZQ?si=hD93qOubUcMO9w05", # Skype 
         ]
         # Choose a random song
         index = random.randint(0, len(songs) - 1)

@@ -119,17 +119,18 @@ class Brain(Node):
         dock_tool = DockTool(self.navigator)  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
         navigate_tool = NavigateTool(self.navigation_publisher)
         dance_tool = DanceTool()
-        voice_cloning_tool = VoiceCloningTool()
-        from langchain.tools import HumanInputRun
+        # voice_cloning_tool = VoiceCloningTool()
+        from langchain_community.tools import HumanInputRun
         human_input = HumanInputRun(input_func=self.get_human_input)
 
-        tools = [steer_tool, speech_tool, dance_tool, dock_tool, voice_cloning_tool, navigate_tool, human_input]
+        tools = [steer_tool, speech_tool, dance_tool, dock_tool, navigate_tool, human_input]
         return tools
 
     def get_human_input(self, secs=5, timeout=30):
         """
         Get human input from the user, with an improved performance approach.
         """
+        os.system("mpv  --audio-device=alsa/hw:1,0 ~/bytebot/ping.mp3")
         TRANSCRIPTION_LOG = os.path.join(
             os.expanduser("~"), "bytebot", "knowledge", "voice.txt"
         )
@@ -157,9 +158,8 @@ class Brain(Node):
                         )[1].strip()
                         if content_after_marker.endswith(".."):
                             return content_after_marker[:-2].strip()
-            except FileNotFoundError:
-                print(f"File {TRANSCRIPTION_LOG} not found.")
-                break
+            except Exception as e:
+                print(f"Error reading transcription log: {e}")
 
         return None
 
