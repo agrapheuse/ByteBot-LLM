@@ -1,10 +1,10 @@
 import asyncio
 import json
+import os
+import subprocess
 
 import pyaudio
 import websockets
-import os
-import subprocess
 
 DEEPGRAM_API_KEY = "161f0950caa93401ba308a0546d658acad90dd67"
 
@@ -35,7 +35,7 @@ async def microphone():
         input=True,
         frames_per_buffer=CHUNK,
         stream_callback=callback,
-        input_device_index=1,
+        input_device_index=3,
     )
 
     stream.start_stream()
@@ -48,10 +48,11 @@ async def microphone():
 
 
 def keyword_detected(transcribed):
-    keywords = ['hey adam', 'hello adam']
+    keywords = ["hey adam", "hello adam"]
     if any(keyword in transcribed.lower() for keyword in keywords):
         return True
     return False
+
 
 def meaningfully_split(transcribed):
     if "hello adam" in transcribed:
@@ -93,7 +94,9 @@ async def process():
                 for _ in range(5):
                     subprocess.Popen(["bash", "-c", command])
                 print("CLEARING TRANSCRIBED DATA")
-                subprocess.Popen(["bash", "-c", "mpv  --audio-device=alsa/hw:1,0 ~/bytebot/ping.mp3"])
+                subprocess.Popen(
+                    ["bash", "-c", "mpv  --audio-device=alsa/hw:1,0 ~/bytebot/ping.mp3"]
+                )
                 return ""
             return transcribed
 

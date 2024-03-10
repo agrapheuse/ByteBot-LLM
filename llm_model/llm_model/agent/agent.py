@@ -1,23 +1,25 @@
 import os
 
+from langchain import hub
+from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.chains.openai_functions import (
-    create_openai_fn_runnable,
     create_structured_output_runnable,
 )
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from langgraph.graph import END, StateGraph
-from .plan import Plan, PlanExecute, Response
+
+from .plan import Plan
 from .retriever import Retriever
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain import hub
+
 
 class Agent:
     def __init__(self, tools, logger):
         self.tools = tools
         prompt = hub.pull("hwchase17/openai-tools-agent")
         agent = create_openai_tools_agent(
-            ChatOpenAI(model="gpt-4-turbo-preview", temperature=0.7), tools, prompt,
+            ChatOpenAI(model="gpt-4-turbo-preview", temperature=0.7),
+            tools,
+            prompt,
         )
         self.agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
         self.logger = logger
@@ -53,6 +55,7 @@ class Agent:
         # context = self.rag.retrieve(input_text)
         general_prompt = f"""
 You are an AI Robot, you will be asked questions that you have to answer to or perform actions.
+You have access to a variety of tools. You can use these tools to accomplish tasks.
 Max 30 words.
 Always use the speech tool to communicate with the user. Do not repeat the user's input, just respond to it.
 
@@ -96,7 +99,6 @@ Current Step:
         """
         self.act_from_plan([prompt])
 
-
     def _create_planner(self):
         """
         This function takes in input text and returns a plan to follow.
@@ -109,7 +111,7 @@ The result of the final step should be the final answer. Make sure that each ste
 
 # Here is an overview of tools at your disposal:
 {tools}
-
+TIP: Sleep means going to the dock
 # Here is the objective to plan for:
 {objective}
 
@@ -117,7 +119,7 @@ The result of the final step should be the final answer. Make sure that each ste
 {context}
 
 TIP: The objective can be a bit mumbled since it is coming from a flawed speech to text system. If you don't understand it, ask for clarification.
-IMPORTANT! There should be as little steps as possible. Usually 1-3 but can be more.
+IMPORTANT! There should be as little steps as possible. Usually 1-3 but can be more. The simpler the better.
 """
         )
         planner = create_structured_output_runnable(
@@ -168,7 +170,9 @@ IMPORTANT! There should be as little steps as possible. Usually 1-3 but can be m
     def _create_retriever(self):
         USER_FOLDER = os.path.expanduser("~")
         USER_FOLDER = os.path.expanduser("~")
-        KNOWLEDGE_PATH = os.path.join(USER_FOLDER, "bytebot", "knowledge", "llm-context")
+        KNOWLEDGE_PATH = os.path.join(
+            USER_FOLDER, "bytebot", "knowledge", "llm-context"
+        )
         if not os.path.exists(KNOWLEDGE_PATH):
             os.makedirs(KNOWLEDGE_PATH)
             # Make a file with Asimov's laws

@@ -1,23 +1,22 @@
+import json
 import os
 import sys
+import time
 
 import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from std_msgs.msg import String
 
+from .agent import Agent
 from .tools import (
+    DanceTool,
     DockTool,
+    NavigateTool,
     SpeechTool,
     SteerTool,
     Turtlebot4Navigator,
-    DanceTool,
-    NavigateTool,
-    VoiceCloningTool,
 )
-from .agent import Agent
-import time
-import json
 
 sys.path.append("..")
 print(os.getcwd())
@@ -80,6 +79,7 @@ class Brain(Node):
         self.agent = Agent(self._get_tools(), self.get_logger())
         # Initialization ready
         self.publish_string("llm_model ready", self.initialization_publisher)
+        self.publish_string("listening", self.llm_state_publisher)
 
     def llm_callback(self, msg):
         """
@@ -88,7 +88,8 @@ class Brain(Node):
         """
         self.get_logger().info(f"BRAIN ==== Received message: {msg.data}")
         self.agent.act(msg.data)
-        self.get_logger().info(f"Spoke: '{msg.data}'")
+        with open("/tmp/voice.txt", "w") as f:
+            f.write("")
 
     def plan_callback(self, msg):
         """
@@ -167,7 +168,7 @@ class Brain(Node):
                     -1
                 ].strip()
                 if content_after_marker.endswith(".."):
-                    return content_after_marker[:-2].strip()
+                    return content_after_marker.replace(".", "")
             except Exception as e:
                 print(f"Error reading transcription log: {e}")
 

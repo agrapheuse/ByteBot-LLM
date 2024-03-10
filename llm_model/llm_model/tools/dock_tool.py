@@ -15,10 +15,8 @@ class DockInput(BaseModel):
 
 class DockTool(BaseTool):
     name = "dock"
-    description = ("Dock or undock the robot from a charging station, useful for recharging the robot or enabling "
-                   "movement. The dock can be referred to as home, waking up or going to sleep or maybe even misinterpreted as 'dog' or something "
-                   "similar by the "
-                   "speech to text.")
+    description = """Dock or undock the robot from a charging station, useful for recharging the robot or enabling
+Can be synonimous with 'charge' or 'recharge', 'wake up' or 'sleep'"""
     args_schema: Type[BaseModel] = DockInput
     navigator: Turtlebot4Navigator = None
 
@@ -38,7 +36,7 @@ class DockTool(BaseTool):
             self.navigator.dock()
         else:
             self.navigator.undock()
-        
+
         return "Docking or undocking the robot"
 
     async def _arun(
