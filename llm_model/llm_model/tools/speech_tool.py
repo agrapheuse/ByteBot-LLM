@@ -1,33 +1,23 @@
-from langchain.pydantic_v1 import BaseModel, Field
-from langchain.tools import BaseTool, StructuredTool, tool
-from typing import Type, Optional
+import datetime
+import json
+import os
+import subprocess
+from typing import Iterator, Optional, Type
+
+# Audio recording related
+from elevenlabs import Voice, generate
+from elevenlabs.client import ElevenLabs
+from gtts import gTTS
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-import shutil
-import subprocess
-from typing import Iterator
-
-from rclpy.publisher import Publisher
-import datetime
-import json
-import requests
-import time
-
-import os
-
-# Audio recording related
-import sounddevice as sd
-from scipy.io.wavfile import write
-
-from elevenlabs import generate, play, Voice, stream
-from elevenlabs.client import ElevenLabs
+from langchain.pydantic_v1 import BaseModel, Field
+from langchain.tools import BaseTool, tool
 
 # Global Initialization
 from llm_config.user_config import UserConfig
-
-from gtts import gTTS
+from rclpy.publisher import Publisher
 
 config = UserConfig()
 
@@ -36,19 +26,19 @@ flag_file_path = "/tmp/voice_cloning_flag.txt"
 api_key = "c099a9d746f0d3f8ad573e47223b85a8"
 client = ElevenLabs(api_key=api_key)
 
+
 class SpeechInput(BaseModel):
     text: str = Field(..., description="The text to be converted to audio")
 
 
 class SpeechTool(BaseTool):
     name = "speech"
-    description = (
-        "useful for converting text to audio and saying something to the user, use this often to give feedback to the user"
-    )
+    description = "useful for converting text to audio and saying something to the user, use this often to give feedback to the user"
     args_schema: Type[BaseModel] = SpeechInput
     publisher: Publisher = None
+    device_index: int = 7
 
-    def __init__(self, publisher):
+    def __init__(self, publisher, device_index=7):
         super().__init__()
         self.publisher = publisher
 
@@ -88,7 +78,7 @@ class SpeechTool(BaseTool):
 
         with open("/tmp/feedback_log.json", "w") as file:
             json.dump(feedback_log, file)
-        os.system('killall mpv')
+        os.system("killall mpv")
         if msg:
             if CHEAP:
                 self.play_generic_tts(msg)
@@ -99,7 +89,7 @@ class SpeechTool(BaseTool):
         tts = gTTS(text=msg, lang="en")
         tts_file = "/tmp/speech_output.mp3"
         tts.save(tts_file)
-        os.system(f"mpv --audio-device=alsa/hw:1,0 {tts_file}")
+        os.system(f"mpv {tts_file}")
 
     def play_tts(self, msg):
         # if flag_file_path exists, use the cloned voice
@@ -131,7 +121,14 @@ class SpeechTool(BaseTool):
         self._stream(audio)
 
     def _stream(self, audio_stream: Iterator[bytes]) -> bytes:
-        mpv_command = ["mpv", "--no-cache", "--no-terminal", "--", "fd://0", "--audio-device=alsa/hw:1,0"]
+        mpv_command = [
+            "mpv",
+            "--no-cache",
+            "--no-terminal",
+            "--",
+            "fd://0",
+            "--audio-device=alsa/hw:1,0",
+        ]
         mpv_process = subprocess.Popen(
             mpv_command,
             stdin=subprocess.PIPE,
@@ -151,6 +148,7 @@ class SpeechTool(BaseTool):
         mpv_process.wait()
 
         return audio
+
 
 if __name__ == "__main__":
     tool = SpeechTool(None)

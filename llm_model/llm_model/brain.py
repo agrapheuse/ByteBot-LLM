@@ -1,4 +1,4 @@
-import json
+import ast
 import os
 import sys
 import time
@@ -86,7 +86,6 @@ class Brain(Node):
         Callback function for the LLM input listener.
         This function is called when a message is received on the LLM input topic.
         """
-        self.get_logger().info(f"BRAIN ==== Received message: {msg.data}")
         self.agent.act(msg.data)
         with open("/tmp/voice.txt", "w") as f:
             f.write("")
@@ -96,8 +95,9 @@ class Brain(Node):
         Callback function for the plan listener.
         This function is called when a message is received on the plan topic.
         """
-        plan = json.loads(msg.data)
-        self.get_logger().info(f"Plan: {plan['plan']}")
+        self.get_logger().info(f"Received plan: {msg.data}")
+        plan = ast.literal_eval(msg.data)
+        self.get_logger().info(f"Plan: {plan}")
         self.agent.act_from_plan(plan)
 
     def tool_callback(self, msg):
@@ -133,7 +133,7 @@ class Brain(Node):
 
         human_input = HumanInputRun(
             input_func=self.get_human_input,
-            description="Get human input, useful for gathering information from the user. Use this to get input from the user or people around them. Doesn't require any parameters.  You are a robot, if you speak, you will be heard IMPORTANT! Use the speech tool before this tool to give feedback to the user.",
+            description="Get human input, useful for gathering information from the user. Use this to get input from the user or people around them. Doesn't require any parameters.  You are a robot, if you speak, you will be heard IMPORTANT! Use the speech tool before and after this tool to give feedback to the user.",
         )
 
         tools = [
@@ -148,7 +148,7 @@ class Brain(Node):
 
     def get_human_input(self, secs=5, timeout=30):
         notification_sound = os.path.expanduser("~/bytebot/ping.mp3")
-        transcription_log_path = os.path.expanduser("~/bytebot/knowledge/voice.txt")
+        transcription_log_path = os.path.expanduser("/tmp/voice.txt")
         transcription_marker = "===TRANSCRIPTION==="
         start_time = time.time()
 

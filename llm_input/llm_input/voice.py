@@ -18,12 +18,10 @@ class SpeechRecognition:
     def __init__(
         self,
         deepgram_api_key="161f0950caa93401ba308a0546d658acad90dd67",
-        input_device_index=3,
         log_path="/tmp/voice.txt",
         activation_function=None,
     ):
         self.deepgram_api_key = deepgram_api_key
-        self.input_device_index = input_device_index
         self.log_path = log_path
         self.audio_queue = asyncio.Queue()
         self.FORMAT = pyaudio.paInt16

@@ -2,14 +2,17 @@ import os
 
 from langchain import hub
 from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.chains.openai_functions import (
-    create_structured_output_runnable,
-)
+from langchain.chains.openai_functions import create_structured_output_runnable
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
 from .plan import Plan
 from .retriever import Retriever
+
+BEHAVIOR_FILE = "/tmp/behavior.txt"
+if not os.path.exists(BEHAVIOR_FILE):
+    with open(BEHAVIOR_FILE, "w") as file:
+        file.write("")
 
 
 class Agent:
@@ -51,13 +54,11 @@ class Agent:
 
         conversation_so_far = self.retrieve_conversation_so_far()
         self.logger.info(f"Conversation so far: {conversation_so_far}")
-        conversation_so_far = ""
-        # context = self.rag.retrieve(input_text)
         general_prompt = f"""
 You are an AI Robot, you will be asked questions that you have to answer to or perform actions.
 You have access to a variety of tools. You can use these tools to accomplish tasks.
 Max 30 words.
-Always use the speech tool to communicate with the user. Do not repeat the user's input, just respond to it.
+Always use the speech tool to communicate with the user. You are talking to a user.
 
 CONVERSATION SO FAR:
 {conversation_so_far}
@@ -75,13 +76,23 @@ Current Step:
 
     def act_from_plan(self, plan: list[str]):
         self.logger.info(f"Plan received: {plan}")
+        with open(BEHAVIOR_FILE, "r") as file:
+            behavior = file.read()
+        behavior_prompt = f"""
+        Here is a guideline from your owner:
+        ====
+        {behavior}
+        ====
+        """
+
         general_prompt = f"""
         You are a superhuman robot that has access to a variety of tools. You can use these tools to accomplish tasks.
         Max 30 words.
         The user has passed in a plan of the following steps:
         {plan}
         
-        
+        You are talking to a user. In each step, communicate how the bot is meant to behave.
+        {behavior_prompt if behavior else ""}
         The current step is:
         
         """
@@ -119,7 +130,7 @@ TIP: Sleep means going to the dock
 {context}
 
 TIP: The objective can be a bit mumbled since it is coming from a flawed speech to text system. If you don't understand it, ask for clarification.
-IMPORTANT! There should be as little steps as possible. Usually 1-3 but can be more. The simpler the better.
+IMPORTANT! There should be as little steps as possible. Usually 1-2 but can be more. The simpler the better.
 """
         )
         planner = create_structured_output_runnable(
