@@ -41,14 +41,19 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from elevenlabs import set_api_key, generate, play
+from elevenlabs import generate, play
+from elevenlabs.client import ElevenLabs
 
 # Global Initialization
 from llm_config.user_config import UserConfig
 
+from gtts import gTTS
+
 config = UserConfig()
 
-
+CHEAP = True
+api_key = os.getenv("ELEVENLABS_API_KEY")
+client = ElevenLabs(api_key=api_key)
 class AudioOutput(Node):
     def __init__(self):
         super().__init__("audio_output")
@@ -57,9 +62,6 @@ class AudioOutput(Node):
         self.initialization_publisher = self.create_publisher(
             String, "/llm_initialization_state", 0
         )
-
-        # eleven labs
-        set_api_key(os.environ["ELEVENLABS_API_KEY"])
 
         # LLM state publisher
         self.llm_state_publisher = self.create_publisher(String, "/llm_state", 0)
@@ -74,31 +76,48 @@ class AudioOutput(Node):
 
     def feedback_for_user_callback(self, msg):
         self.get_logger().info(f"Received text: '{msg.data}'")
+        current_time = datetime.datetime.now()
+        try:
+            with open("/tmp/feedback_log.json", "r") as file:
+                feedback_log = json.load(file)
+        except FileNotFoundError:
+            feedback_log = {}
+
+        if msg.data in feedback_log:
+            last_spoken_time = datetime.datetime.fromisoformat(feedback_log[msg.data])
+            if (current_time - last_spoken_time).total_seconds() < 300:
+                self.get_logger().info("Message recently spoken, skipping...")
+                return
+        feedback_log[msg.data] = current_time.isoformat()
+
+        with open("/tmp/feedback_log.json", "w") as file:
+            json.dump(feedback_log, file)
         # Log and publish state updates
         self.get_logger().info("Finished TTS playback.")
-        self.publish_string("feedback finished", self.llm_state_publisher)
-        self.publish_string("listening", self.llm_state_publisher)
         if msg.data:
             self.get_logger().info(f"MSG DATA FOUND - PLAYING  {msg.data}")
-            audio = generate(
-                text=msg.data,
+            if CHEAP:
+                self.play_generic_tts(msg.data)
+            else:
+                self.play_tts(msg)
+            self.publish_string("feedback finished", self.llm_state_publisher)
+            # self.publish_string("listening", self.llm_state_publisher)
+
+    def play_generic_tts(self, msg):
+        tts = gTTS(text=msg, lang="en")
+        tts_file = "/tmp/speech_output.mp3"
+        tts.save(tts_file)
+        os.system(f"mpv --audio-device=alsa/hw:1,0 {tts_file}")
+    
+    def play_tts(self, msg):
+        audio = generate(
+                text="....... " +msg.data,
                 voice="George - royal and elegant",
             )
-            play(audio, use_ffmpeg=True)
-
-            self.get_logger().info("Finished Polly playing.")
-            self.publish_string("feedback finished", self.llm_state_publisher)
-            self.publish_string("listening", self.llm_state_publisher)
-
-        # # Save the audio output to a file
-        # output_file_path = "/tmp/speech_output.mp3"
-        # with open(output_file_path, "wb") as file:
-        #     file.write(response["AudioStream"].read())
-        # # Play the audio output
-        # os.system("mpv" + " " + output_file_path)
-        # self.get_logger().info("Finished Polly playing.")
-        # self.publish_string("feedback finished", self.llm_state_publisher)
-        # self.publish_string("listening", self.llm_state_publisher)
+        # Save to tmp
+        with open("/tmp/speech_output.mp3", "wb") as file:
+            file.write(audio)
+        os.system("mpv  --audio-device=alsa/hw:1,0 /tmp/speech_output.mp3")
 
     def publish_string(self, string_to_send, publisher_to_use):
         msg = String()

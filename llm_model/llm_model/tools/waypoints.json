@@ -1,0 +1,22 @@
+{
+    "entrance": {
+        "position": [-6.298, -6.960],
+        "orientation": 180,
+        "description": "Entrance of the room"
+    },
+    "corner": {
+        "position": [-3.962, 1.700],
+        "orientation": 90,
+        "description": "Top left corner of the room"
+    },
+    "storage_room": {
+        "position": [-18.420, -6.012],
+        "orientation": 90,
+        "description": "Cisco storage room"
+    },
+    "dock": {
+        "position": [0.104, 0.063],
+        "orientation": 45,
+        "description": "Dock"
+    }
+}

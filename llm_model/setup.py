@@ -19,7 +19,7 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "chatgpt = llm_model.chatgpt:main",
+            "brain = llm_model.brain:main",
         ],
     },
 )

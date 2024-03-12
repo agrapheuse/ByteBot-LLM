@@ -19,7 +19,7 @@
 # Description:
 # This launch file is a part of ROS-LLM project developed to control and interact with the turtlesim robot or your own robot.
 # The launch file contains a LaunchDescription object which defines the ROS2 nodes to be executed.
-# 
+#
 # Node test Method:
 # ros2 launch llm_bringup chatgpt_with_turtle_robot.launch.py
 # ros2 topic pub /llm_state std_msgs/msg/String "data: 'listening'" -1
@@ -27,9 +27,9 @@
 # Author: Herman Ye @Auromix
 
 from launch import LaunchDescription
-from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -43,7 +43,7 @@ def generate_launch_description():
             ),
             Node(
                 package="llm_model",
-                executable="chatgpt",
+                executable="brain",
                 name="chatgpt",
                 output="screen",
             ),
@@ -51,18 +51,6 @@ def generate_launch_description():
                 package="llm_output",
                 executable="llm_audio_output",
                 name="llm_audio_output",
-                output="screen",
-            ),
-            Node(
-                package="llm_robot",
-                executable="turtle_robot",
-                name="turtle_robot",
-                output="screen",
-            ),
-            Node(
-                package="turtlesim",
-                executable="turtlesim_node",
-                name="turtlesim_node",
                 output="screen",
             ),
         ]
