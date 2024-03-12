@@ -47,7 +47,7 @@ class SpeechRecognition:
             input=True,
             frames_per_buffer=self.CHUNK,
             stream_callback=self.callback,
-            input_device_index=self.input_device_index,
+            input_device_index=1
         )
         stream.start_stream()
         while stream.is_active():

@@ -38,7 +38,7 @@ class SpeechTool(BaseTool):
     publisher: Publisher = None
     device_index: int = 7
 
-    def __init__(self, publisher, device_index=7):
+    def __init__(self, publisher, device_index=1):
         super().__init__()
         self.publisher = publisher
 
