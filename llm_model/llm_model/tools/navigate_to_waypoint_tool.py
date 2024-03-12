@@ -10,12 +10,16 @@ from langchain.tools import BaseTool
 from .turtlebot4_navigation import Turtlebot4Navigator, TurtleBot4Directions
 from rclpy.publisher import Publisher
 from std_msgs.msg import String
-waypoints = "corner, patrol, sleep"
-# with open("waypoints.json") as f:
-#     waypoints = json.load(f)
+import os
+USER_DIR = os.path.expanduser("~")
+with open(os.path.join(USER_DIR, "bytebot", "commands.json"), "r") as file: 
+    commands = file.read()
+
+parsed_waypoints = json.loads(commands)
+parsed_waypoints_str = "\n".join([f"{waypoint['name']} : {waypoint['description']}" for waypoint in parsed_waypoints])
 
 class NavigateInput(BaseModel):
-    waypoint: str = Field(..., description=f"Waypoints to navigate to: {waypoints}. Choose one")
+    waypoint: str = Field(..., description=f"Waypoints to navigate to: {parsed_waypoints_str}. Choose one")
 
 
 class NavigateTool(BaseTool):

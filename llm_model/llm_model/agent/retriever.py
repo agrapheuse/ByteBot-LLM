@@ -26,6 +26,12 @@ if not os.path.exists(KNOWLEDGE_PATH):
             Our supervisors are Geert de Paepe and Levi Slap
             """
         )
+    with open(os.path.join(KNOWLEDGE_PATH, "shop.txt"), "w") as file:
+        file.write(
+            """
+            Bread is on sale today! Make tasty sandwiches with our fresh bread. 50% off!
+            """
+        )
 
 
 class Retriever:

@@ -168,12 +168,13 @@ class Brain(Node):
                     -1
                 ].strip()
                 if content_after_marker.endswith(".."):
+                    print(f"Human input: {content_after_marker}")
                     return content_after_marker.replace(".", "")
             except Exception as e:
                 print(f"Error reading transcription log: {e}")
 
         print("Timeout waiting for human input.")
-        return None
+        return "Timeout waiting for human input."
 
 
 def main(args=None):
