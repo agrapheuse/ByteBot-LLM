@@ -15,13 +15,10 @@ from langchain.callbacks.manager import (
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import BaseTool, tool
 
-# Global Initialization
-from llm_config.user_config import UserConfig
 from rclpy.publisher import Publisher
 
-config = UserConfig()
-
-CHEAP = True
+CHEAP = False
+VOICE_ID = "8FUlc5AHe8o6Ip0yirZF"
 flag_file_path = "/tmp/voice_cloning_flag.txt"
 api_key = "c099a9d746f0d3f8ad573e47223b85a8"
 client = ElevenLabs(api_key=api_key)
@@ -112,8 +109,8 @@ class SpeechTool(BaseTool):
                 text="....... " + msg,
                 voice=Voice(
                     api_key=api_key,
-                    voice_id="DxwyQfgZrGyVfTtqkF2O",
-                    settings=client.voices.get_settings("DxwyQfgZrGyVfTtqkF2O"),
+                    voice_id="8FUlc5AHe8o6Ip0yirZF",
+                    settings=client.voices.get_settings("8FUlc5AHe8o6Ip0yirZF"),
                 ),
                 stream=True,
             )

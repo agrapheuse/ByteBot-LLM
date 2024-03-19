@@ -123,9 +123,9 @@ class Brain(Node):
         """
         steer_tool = SteerTool(self.steer_publisher)
         speech_tool = SpeechTool(self.llm_feedback_publisher)
-        dock_tool = DockTool(
-            self.navigator
-        )  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
+        # dock_tool = DockTool(
+        #     self.navigator
+        # )  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
         navigate_tool = NavigateTool(self.navigation_publisher)
         dance_tool = DanceTool()
         # voice_cloning_tool = VoiceCloningTool()
@@ -133,20 +133,20 @@ class Brain(Node):
 
         human_input = HumanInputRun(
             input_func=self.get_human_input,
-            description="Get human input, useful for gathering information from the user. Use this to get input from the user or people around them. Doesn't require any parameters.  You are a robot, if you speak, you will be heard IMPORTANT! Use the speech tool before and after this tool to give feedback to the user.",
+            description="Get human input, useful for gathering information from the user. Use this to get input from the user or people around them. Doesn't require any parameters.  You are a robot, if you speak, you will be heard IMPORTANT! Use the speech tool before this tool to give feedback to the user. Act based on the response",
         )
 
         tools = [
             steer_tool,
             speech_tool,
             dance_tool,
-            dock_tool,
+            # dock_tool,
             navigate_tool,
             human_input,
         ]
         return tools
 
-    def get_human_input(self, secs=5, timeout=30):
+    def get_human_input(self, secs=3, timeout=15):
         notification_sound = os.path.expanduser("~/bytebot/ping.mp3")
         transcription_log_path = os.path.expanduser("/tmp/voice.txt")
         transcription_marker = "===TRANSCRIPTION==="
@@ -155,25 +155,19 @@ class Brain(Node):
         with open(transcription_log_path, "w") as file:
             file.write(transcription_marker + "\n")
         self.get_logger().info("Listening for human input. STATE FILE MARKED")
-        os.system(
-            f"mpv --audio-device=alsa/hw:1,0 {notification_sound} >/dev/null 2>&1 &"
-        )
+        os.system(f"mpv {notification_sound} >/dev/null 2>&1 &")
 
         while time.time() - start_time <= timeout:
             time.sleep(secs)
-            try:
-                with open(transcription_log_path, "r") as file:
-                    transcription = file.read()
-                content_after_marker = transcription.split(transcription_marker)[
-                    -1
-                ].strip()
-                if content_after_marker.endswith(".."):
-                    print(f"Human input: {content_after_marker}")
-                    return content_after_marker.replace(".", "")
-            except Exception as e:
-                print(f"Error reading transcription log: {e}")
-
-        print("Timeout waiting for human input.")
+            secs = secs - 0.5 if secs > 0.5 else 0.5
+            with open(transcription_log_path, "r") as file:
+                transcription = file.read()
+            self.get_logger().info(f"Transcription: {transcription}")
+            content_after_marker = transcription.strip()
+            if content_after_marker.endswith(".."):
+                content_after_marker = content_after_marker[:-2]  # Remove trailing dots.
+                self.get_logger().info(f"Human input: {content_after_marker}")
+                return content_after_marker
         return "Timeout waiting for human input."
 
 

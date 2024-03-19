@@ -12,14 +12,16 @@ from rclpy.publisher import Publisher
 from std_msgs.msg import String
 import os
 USER_DIR = os.path.expanduser("~")
-with open(os.path.join(USER_DIR, "bytebot", "commands.json"), "r") as file: 
-    commands = file.read()
+with open(os.path.join(USER_DIR, "bytebot", "commands.json"), "r") as file:
+    commands = json.load(file)
 
-parsed_waypoints = json.loads(commands)
-parsed_waypoints_str = "\n".join([f"{waypoint['name']} : {waypoint['description']}" for waypoint in parsed_waypoints])
+parsed_waypoints_str = "\n".join(
+    [f"{name} : {waypoint['description']}" for name, waypoint in commands.items()]
+)
+
 
 class NavigateInput(BaseModel):
-    waypoint: str = Field(..., description=f"Waypoints to navigate to: {parsed_waypoints_str}. Choose one")
+    waypoint: str = Field(..., description=f"Waypoints to navigate to: {parsed_waypoints_str}. Choose one, only the name")
 
 
 class NavigateTool(BaseTool):

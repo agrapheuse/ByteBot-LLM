@@ -25,8 +25,8 @@ class AudioInput(Node):
             String, "/llm_input_audio_to_text", 0
         )
         self.sr = SpeechRecognition(log_path="/tmp/voice.txt")
-        self.publish_string("llm_audio_input", self.initialization_publisher)
         self.timer = self.create_timer(1, self.action_function_listening)
+        self.publish_string("llm_audio_input", self.initialization_publisher)
         self.loop = asyncio.new_event_loop()
         threading.Thread(target=self.loop.run_forever, daemon=True).start()
 
@@ -38,6 +38,7 @@ class AudioInput(Node):
     async def action_function_listening(self):
         with open("/tmp/voice.txt", "r") as f:
             transcribed = f.read()
+        self.get_logger().info(f"Transcribed: {transcribed}")
         if self.keyword_detected(transcribed) and transcribed[-2:] == "..":
             self.get_logger().info("Keyword detected!")
             temp_content = self.sr.meaningfully_split(transcribed)

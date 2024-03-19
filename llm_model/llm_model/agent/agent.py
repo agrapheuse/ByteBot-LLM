@@ -76,6 +76,13 @@ Current Step:
 
     def act_from_plan(self, plan: list[str]):
         self.logger.info(f"Plan received: {plan}")
+        plan = plan['plan']
+        if plan in self.cache:
+            self.logger.info(f"Plan {plan} is already in cache.")
+            return
+        if len(self.cache) > 1:
+            self.cache = []
+        self.cache.append(plan)
         with open(BEHAVIOR_FILE, "r") as file:
             behavior = file.read()
         behavior_prompt = f"""

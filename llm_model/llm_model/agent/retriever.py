@@ -29,7 +29,10 @@ if not os.path.exists(KNOWLEDGE_PATH):
     with open(os.path.join(KNOWLEDGE_PATH, "shop.txt"), "w") as file:
         file.write(
             """
-            Bread is on sale today! Make tasty sandwiches with our fresh bread. 50% off!
+            Bread is on sale today! Make tasty sandwiches with our fresh bread. 50 percent off! Now in the bakery!
+            We have the best rye bread in town. Come and get it!
+            Location is: corner
+            Use the NavigationTool to go there
             """
         )
 
