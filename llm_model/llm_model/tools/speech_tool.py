@@ -116,6 +116,9 @@ class SpeechTool(BaseTool):
             )
 
         self._stream(audio)
+        with open("/tmp/voice.txt", "w") as file:
+            # Clear the transcription log
+            file.write("")
 
     def _stream(self, audio_stream: Iterator[bytes]) -> bytes:
         mpv_command = [

@@ -149,11 +149,7 @@ class Brain(Node):
     def get_human_input(self, secs=3, timeout=15):
         notification_sound = os.path.expanduser("~/bytebot/ping.mp3")
         transcription_log_path = os.path.expanduser("/tmp/voice.txt")
-        transcription_marker = "===TRANSCRIPTION==="
         start_time = time.time()
-
-        with open(transcription_log_path, "w") as file:
-            file.write(transcription_marker + "\n")
         self.get_logger().info("Listening for human input. STATE FILE MARKED")
         os.system(f"mpv {notification_sound} >/dev/null 2>&1 &")
 
