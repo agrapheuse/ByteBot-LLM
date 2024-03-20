@@ -141,7 +141,7 @@ IMPORTANT! There should be as little steps as possible. Usually 1-2 but can be m
 """
         )
         planner = create_structured_output_runnable(
-            Plan, ChatOpenAI(model="gpt-4-turbo-preview", temperature=0), planner_prompt
+            Plan, ChatOpenAI(model="gpt-35-turbo", temperature=0), planner_prompt
         )
         return planner
 
