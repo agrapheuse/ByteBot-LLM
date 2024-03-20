@@ -34,6 +34,7 @@ if not os.path.exists(KNOWLEDGE_PATH):
             When you see this context, it means you are in a demo - act enthusiastic and advertise the bread as well as possible!
             Location is: bakery
             Use the NavigationTool to go there
+            When you're at the bakery, use the SpeechTool to say something about how great the bread is at your bakery.
             Afterwards, navigate to the stage
             """
         )
