@@ -19,7 +19,7 @@ class NavigatorNode(Node):
         self.turtlebot4_navigator = Turtlebot4Navigator()
         self.navigation_task = None
         # self.navigator.waitUntilNav2Active()
-        self.turtlebot4_navigator.waitUntilNav2Active(localizer="bt_navigator")
+        # self.turtlebot4_navigator.waitUntilNav2Active(localizer="bt_navigator")
         self.save_state(None)
         if not self.turtlebot4_navigator.getDockedStatus():
             self.turtlebot4_navigator.dock()
