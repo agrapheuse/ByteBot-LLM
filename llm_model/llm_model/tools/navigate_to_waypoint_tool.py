@@ -66,6 +66,8 @@ class NavigateTool(BaseTool):
         """
         Publishes a string message to a topic.
         """
+        if self.navigator.getDockedStatus():
+            self.navigator.undock()
         msg = String()
         msg.data = waypoint
         waypoint_data = commands[waypoint]
