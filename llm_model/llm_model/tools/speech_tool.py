@@ -109,8 +109,8 @@ class SpeechTool(BaseTool):
                 text="....... " + msg,
                 voice=Voice(
                     api_key=api_key,
-                    voice_id="8FUlc5AHe8o6Ip0yirZF",
-                    settings=client.voices.get_settings("8FUlc5AHe8o6Ip0yirZF"),
+                    voice_id=VOICE_ID,
+                    settings=client.voices.get_settings(VOICE_ID),
                 ),
                 stream=True,
             )
