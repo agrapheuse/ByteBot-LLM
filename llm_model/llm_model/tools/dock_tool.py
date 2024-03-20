@@ -44,3 +44,9 @@ Can be synonimous with 'charge' or 'recharge', 'wake up' or 'sleep'"""
     ) -> str:
         """Use the tool asynchronously."""
         pass
+
+
+if __name__ == "__main__":
+    from langchain.tools import run_tool
+    tool = DockTool(Turtlebot4Navigator())
+    run_tool(tool, {"to_dock": True})

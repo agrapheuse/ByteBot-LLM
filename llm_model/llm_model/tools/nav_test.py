@@ -29,10 +29,11 @@ class NavigatorNode(Node):
         # self.navigator.setInitialPose(initial_pose)
         self.turtlebot4_navigator.setInitialPose(initial_pose)
         self.retrieve_commands()
-        # self.pose_subscription = self.create_subscription(
-        #     String, "/pose_listener", self.listener_callback, 10
-        # )
+        self.pose_subscription = self.create_subscription(
+            String, "/pose_listener", self.listener_callback, 10
+        )
         self.vision_publisher = self.create_publisher(String, "/nav_vision_module", 10)
+        self.get_logger().info("Pose subscriber test node initialised.")
 
     def retrieve_commands(self):
         self.goals = {
@@ -94,6 +95,6 @@ class NavigatorNode(Node):
 if __name__ == "__main__":
     rclpy.init()
     node = NavigatorNode()
-    node.navigate_to("bakery")
+    # node.navigate_to("bakery")
     rclpy.spin(node)
     rclpy.shutdown()
