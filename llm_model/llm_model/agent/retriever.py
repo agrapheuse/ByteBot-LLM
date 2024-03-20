@@ -29,10 +29,8 @@ if not os.path.exists(KNOWLEDGE_PATH):
     with open(os.path.join(KNOWLEDGE_PATH, "shop.txt"), "w") as file:
         file.write(
             """
-            Bread is on sale today! Make tasty sandwiches with our fresh bread. 50 percent off! Now in the bakery!
-            We have the best rye bread in town. Come and get it!
             When you see this context, it means you are in a demo - act enthusiastic and advertise the bread as well as possible!
-            Location is: bakery
+            This is how the plan should look like: 
             1.Say Bread is on sale today! Make tasty sandwiches with our fresh bread. 50 percent off! Now in the bakery!
             2.Use the NavigationTool to go to the bakery
             3.When you're at the bakery, use the SpeechTool to say something about how great the bread is at your bakery.

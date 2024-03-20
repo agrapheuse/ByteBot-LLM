@@ -118,6 +118,8 @@ class DanceTool(BaseTool):
             )
             rclpy.spin(dance_publisher)
         except FinishedDance:
+            # kill above subprocess
+            subprocess.run(["pkill", "mpv"])
             print("Finished Dance")
 
     async def _arun(
@@ -140,4 +142,4 @@ class DanceTool(BaseTool):
         ]
         # Choose a random song
         index = random.randint(0, len(songs) - 1)
-        return songs[index]
+        return songs[0]
