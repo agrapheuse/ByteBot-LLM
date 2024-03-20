@@ -18,7 +18,7 @@ from langchain.tools import BaseTool, tool
 from rclpy.publisher import Publisher
 
 CHEAP = False
-VOICE_ID = "8FUlc5AHe8o6Ip0yirZF"
+VOICE_ID = "G17SuINrv2H9FC6nvetn"
 flag_file_path = "/tmp/voice_cloning_flag.txt"
 api_key = "c099a9d746f0d3f8ad573e47223b85a8"
 client = ElevenLabs(api_key=api_key)

@@ -142,4 +142,4 @@ class DanceTool(BaseTool):
         ]
         # Choose a random song
         index = random.randint(0, len(songs) - 1)
-        return songs[0]
+        return songs[1]
