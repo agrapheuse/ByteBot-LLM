@@ -1,4 +1,3 @@
-import os
 import subprocess
 
 
@@ -9,9 +8,10 @@ def handle_command_1():
 def handle_command_2():
     print("Executing Command 2...")
 
+
 def initial():
     print("Executing initial setup for the presentation...")
-    command = "ros2 topic pub /llm_plan std_msgs/msg/String \"data: '{\\\"plan\\\":[\\\"undock\\\",\\\"use the navigation tool to go to the stage\\\",\\\"use the speech tool to say something like: hello everyone, my name is adam and I am delighted to welcome you to my presentation. I hope you enjoy the evening and have a great time. lets celebrate with a dance that ive been practicing\\\", \\\"use the dance tool to perform a dance\\\"]}'\" -1"
+    command = 'ros2 topic pub /llm_plan std_msgs/msg/String "data: \'{\\"plan\\":[\\"undock\\",\\"use the navigation tool to go to the stage\\",\\"use the speech tool to say something like: hello everyone, my name is adam and I am delighted to welcome you to my presentation. I hope you enjoy the evening and have a great time. lets celebrate with a dance that ive been practicing\\", \\"use the dance tool to perform a dance\\"]}\'" -1'
 
     for _ in range(5):
         subprocess.run(command, shell=True)
@@ -19,8 +19,8 @@ def initial():
 
 
 def patrol():
-    print("Executing initial setup for the presentation...")
-    command = 'ros2 topic pub /llm_plan std_msgs/msg/String "data: \'{\\"plan\\":[\\"use the navigation tool to go to the stage\\",\\"use the speech tool to say something like: hello everyone, my name is adam and I am delighted to welcome you to my presentation. I hope you enjoy the evening and have a great time. lets celebrate with a dance that ive been practicing\\", \\"use the dance tool to perform a dance\\"]}\'" -1'
+    print("Patrolling..")
+    command = 'ros2 topic pub /llm_plan std_msgs/msg/String "data: \'{\\"plan\\":[\\"say lets look at my patrolling abilities now, i will protect this store at all cost\\", \\"send patrol to NavigationTool\\"]}\'" -1'
 
     for _ in range(5):
         subprocess.run(command, shell=True)
@@ -50,7 +50,7 @@ def main():
         if choice == "1":
             initial()
         elif choice == "2":
-            handle_command_2()
+            patrol()
         elif choice == "0":
             print("Exiting...")
             break

@@ -69,6 +69,7 @@ class NavigateTool(BaseTool):
         """
         msg = String()
         msg.data = waypoint
+        print(f"Published message: {msg.data}")
         self.navigator.publish(msg)
 
     async def _arun(
