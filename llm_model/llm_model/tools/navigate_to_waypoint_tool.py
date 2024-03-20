@@ -32,6 +32,7 @@ commands = {
         "description": "Cisco storage room",
     },
     "sleep": {"position": [-0.813, 1.171], "orientation": 0, "description": "Dock"},
+    "wake up": {"position": [-0.813, 1.171], "orientation": 0, "description": "Undock"},
 }
 
 parsed_waypoints_str = "\n".join(
@@ -66,14 +67,9 @@ class NavigateTool(BaseTool):
         """
         Publishes a string message to a topic.
         """
-        if self.navigator.getDockedStatus():
-            self.navigator.undock()
         msg = String()
         msg.data = waypoint
-        waypoint_data = commands[waypoint]
-        print(tuple(waypoint_data["position"]))
-        gaol = self.navigator.getPoseStamped(waypoint_data["position"], TurtleBot4Directions(waypoint_data["orientation"]))
-        self.navigator.goToPose(gaol)
+        self.navigator.publish(msg)
 
     async def _arun(
         self, run_manager: Optional[AsyncCallbackManagerForToolRun] = None

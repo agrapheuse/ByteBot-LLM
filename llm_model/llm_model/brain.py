@@ -68,8 +68,7 @@ class Brain(Node):
         self.llm_feedback_publisher = self.create_publisher(
             String, "/llm_feedback_to_user", 0
         )
-        self.navigator = Turtlebot4Navigator()
-        # Navigation publisher
+        # # Navigation publisher
         self.navigation_publisher = self.create_publisher(String, "/pose_listener", 0)
 
         self.steer_publisher = self.create_publisher(Twist, "/cmd_vel", 10)
@@ -125,7 +124,7 @@ class Brain(Node):
         # dock_tool = DockTool(
         #     self.navigator
         # )  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
-        navigate_tool = NavigateTool(self.navigator)
+        navigate_tool = NavigateTool(self.navigation_publisher)
         dance_tool = DanceTool()
         # voice_cloning_tool = VoiceCloningTool()
         from langchain_community.tools import HumanInputRun
