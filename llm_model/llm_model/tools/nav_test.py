@@ -7,7 +7,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from turtlebot4_navigation import (
     TurtleBot4Directions,
-    TurtleBot4Navigator,
+    Turtlebot4Navigator,
 )
 
 
@@ -16,7 +16,7 @@ class NavigatorNode(Node):
         super().__init__("pose_subscriber")
         self.get_logger().info("Initialising pose subscriber node...")
         self.navigator = BasicNavigator()
-        self.turtlebot4_navigator = TurtleBot4Navigator()
+        self.turtlebot4_navigator = Turtlebot4Navigator()
         self.navigation_task = None
         self.navigator.waitUntilNav2Active()
         self.save_state(None)
