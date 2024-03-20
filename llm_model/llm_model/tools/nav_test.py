@@ -76,7 +76,7 @@ class NavigatorNode(Node):
             self.turtlebot4_navigator.dock()
             return
         position = self.goals[destination]["position"]
-        orientation = TurtleBot4Directions(self.goals[destination]["orientation"])
+        orientation = TurtleBot4Directions(self.goals[destination]["position"], TurtleBot4Directions.NORTH)
         goal_pose = self.turtlebot4_navigator.getPoseStamped(position, orientation)
         self.stop_task()
         self.navigation_task = self.turtlebot_navigator.goToPose(goal_pose)

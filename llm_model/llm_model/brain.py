@@ -8,8 +8,8 @@ from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from std_msgs.msg import String
 
-from .agent import Agent
-from .tools import (
+from agent import Agent
+from tools import (
     DanceTool,
     DockTool,
     NavigateTool,
@@ -68,12 +68,11 @@ class Brain(Node):
         self.llm_feedback_publisher = self.create_publisher(
             String, "/llm_feedback_to_user", 0
         )
-
+        self.navigator = Turtlebot4Navigator()
         # Navigation publisher
         self.navigation_publisher = self.create_publisher(String, "/pose_listener", 0)
 
         self.steer_publisher = self.create_publisher(Twist, "/cmd_vel", 10)
-        self.navigator = Turtlebot4Navigator()
         # Function name
         self.function_name = "null"
         self.agent = Agent(self._get_tools(), self.get_logger())
@@ -126,7 +125,7 @@ class Brain(Node):
         # dock_tool = DockTool(
         #     self.navigator
         # )  # USE NOAH'S DOCK TOOL, ONLY WORKS WITH NAV TOPIC
-        navigate_tool = NavigateTool(self.navigation_publisher)
+        navigate_tool = NavigateTool(self.navigator)
         dance_tool = DanceTool()
         # voice_cloning_tool = VoiceCloningTool()
         from langchain_community.tools import HumanInputRun
@@ -174,5 +173,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     main()

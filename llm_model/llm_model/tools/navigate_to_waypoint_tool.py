@@ -1,4 +1,4 @@
-import json
+import os
 from typing import Optional, Type
 
 from langchain.callbacks.manager import (
@@ -7,13 +7,32 @@ from langchain.callbacks.manager import (
 )
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import BaseTool
-from .turtlebot4_navigation import Turtlebot4Navigator, TurtleBot4Directions
 from rclpy.publisher import Publisher
 from std_msgs.msg import String
-import os
+
+from .turtlebot4_navigation import TurtleBot4Directions, Turtlebot4Navigator
+
 USER_DIR = os.path.expanduser("~")
-with open(os.path.join(USER_DIR, "bytebot", "commands.json"), "r") as file:
-    commands = json.load(file)
+# with open(os.path.join(USER_DIR, "bytebot", "commands.json"), "r") as file:
+#     commands = json.load(file)
+commands = {
+    "stage": {
+        "position": [-2.415, 4.013],
+        "orientation": 180,
+        "description": "Entrance of the room",
+    },
+    "bakery": {
+        "position": [-2.492, 10.745],
+        "orientation": 90,
+        "description": "bread corner",
+    },
+    "cheese section": {
+        "position": [-3.746, 0.947],
+        "orientation": 90,
+        "description": "Cisco storage room",
+    },
+    "sleep": {"position": [-0.813, 1.171], "orientation": 0, "description": "Dock"},
+}
 
 parsed_waypoints_str = "\n".join(
     [f"{name} : {waypoint['description']}" for name, waypoint in commands.items()]
@@ -21,12 +40,17 @@ parsed_waypoints_str = "\n".join(
 
 
 class NavigateInput(BaseModel):
-    waypoint: str = Field(..., description=f"Waypoints to navigate to: {parsed_waypoints_str}. Choose one, only the name")
+    waypoint: str = Field(
+        ...,
+        description=f"Waypoints to navigate to: {parsed_waypoints_str}. Choose one, only the name",
+    )
 
 
 class NavigateTool(BaseTool):
     name = "navigate_to_waypoint"
-    description = ("Navigate to a waypoint, useful for moving the robot to a specific location")
+    description = (
+        "Navigate to a waypoint, useful for moving the robot to a specific location"
+    )
     args_schema: Type[BaseModel] = NavigateInput
     navigator: Publisher = None
 
@@ -44,15 +68,17 @@ class NavigateTool(BaseTool):
         """
         msg = String()
         msg.data = waypoint
-        self.navigator.publish(msg)
-
-
+        waypoint_data = commands[waypoint]
+        print(tuple(waypoint_data["position"]))
+        gaol = self.navigator.getPoseStamped(waypoint_data["position"], TurtleBot4Directions(waypoint_data["orientation"]))
+        self.navigator.goToPose(gaol)
 
     async def _arun(
         self, run_manager: Optional[AsyncCallbackManagerForToolRun] = None
     ) -> str:
         """Use the tool asynchronously."""
         pass
+
 
 if __name__ == "__main__":
     tool = NavigateTool(Turtlebot4Navigator())
