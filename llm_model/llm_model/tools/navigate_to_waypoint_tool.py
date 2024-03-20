@@ -33,6 +33,7 @@ commands = {
     },
     "sleep": {"position": [-0.813, 1.171], "orientation": 0, "description": "Dock"},
     "wake up": {"position": [-0.813, 1.171], "orientation": 0, "description": "Undock"},
+    "patrol": {"position": [-0.813, 1.171], "orientation": 0, "description": "Patrol"},
 }
 
 parsed_waypoints_str = "\n".join(
