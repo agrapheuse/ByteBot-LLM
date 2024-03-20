@@ -5,7 +5,7 @@ import rclpy
 from nav2_simple_commander.robot_navigator import BasicNavigator
 from rclpy.node import Node
 from std_msgs.msg import String
-from turtlebot4_navigation import (
+from .turtlebot4_navigation import (
     TurtleBot4Directions,
     Turtlebot4Navigator,
 )
