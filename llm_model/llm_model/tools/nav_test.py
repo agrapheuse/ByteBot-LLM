@@ -13,23 +13,25 @@ from turtlebot4_navigation import (
 
 class NavigatorNode(Node):
     def __init__(self):
-        super().__init__("pose_subscriber")
-        self.get_logger().info("Initialising pose subscriber node...")
-        self.navigator = BasicNavigator()
+        super().__init__("pose_subscriber_test")
+        self.get_logger().info("Initialising pose subscriber test node...")
+        # self.navigator = BasicNavigator()
         self.turtlebot4_navigator = Turtlebot4Navigator()
         self.navigation_task = None
-        self.navigator.waitUntilNav2Active()
+        # self.navigator.waitUntilNav2Active()
+        self.turtlebot4_navigator.waitUntilNav2Active()
         self.save_state(None)
         if not self.turtlebot4_navigator.getDockedStatus():
             self.turtlebot4_navigator.dock()
         initial_pose = self.turtlebot4_navigator.getPoseStamped(
             [-8.71, -2.49], TurtleBot4Directions.NORTH
         )
-        self.navigator.setInitialPose(initial_pose)
+        # self.navigator.setInitialPose(initial_pose)
+        self.turtlebot4_navigator.setInitialPose(initial_pose)
         self.retrieve_commands()
-        self.pose_subscription = self.create_subscription(
-            String, "/pose_listener", self.listener_callback, 10
-        )
+        # self.pose_subscription = self.create_subscription(
+        #     String, "/pose_listener", self.listener_callback, 10
+        # )
         self.vision_publisher = self.create_publisher(String, "/nav_vision_module", 10)
 
     def retrieve_commands(self):
@@ -76,7 +78,7 @@ class NavigatorNode(Node):
         orientation = TurtleBot4Directions(self.goals[destination]["orientation"])
         goal_pose = self.turtlebot4_navigator.getPoseStamped(position, orientation)
         self.stop_task()
-        self.navigation_task = self.navigator.goToPose(goal_pose)
+        self.navigation_task = self.turtlebot_navigator.goToPose(goal_pose)
 
     def save_state(self, state):
         self.state_path = "state.json"
@@ -92,5 +94,6 @@ class NavigatorNode(Node):
 if __name__ == "__main__":
     rclpy.init()
     node = NavigatorNode()
+    node.navigate_to("bakery")
     rclpy.spin(node)
     rclpy.shutdown()
