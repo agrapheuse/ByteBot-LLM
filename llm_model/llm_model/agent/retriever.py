@@ -33,9 +33,10 @@ if not os.path.exists(KNOWLEDGE_PATH):
             We have the best rye bread in town. Come and get it!
             When you see this context, it means you are in a demo - act enthusiastic and advertise the bread as well as possible!
             Location is: bakery
-            Use the NavigationTool to go to the bakery
-            When you're at the bakery, use the SpeechTool to say something about how great the bread is at your bakery.
-            Afterwards, navigate to the stage, DO NOT USE THE SPEECH TOOL FOR THIS, THIS IS THE LAST STEP AFTER THE BAKERY
+            1.Say Bread is on sale today! Make tasty sandwiches with our fresh bread. 50 percent off! Now in the bakery!
+            2.Use the NavigationTool to go to the bakery
+            3.When you're at the bakery, use the SpeechTool to say something about how great the bread is at your bakery.
+            4.Afterwards, navigate to the stage, DO NOT USE THE SPEECH TOOL FOR THIS, THIS IS THE LAST STEP AFTER THE BAKERY
             """
         )
 
