@@ -31,8 +31,10 @@ if not os.path.exists(KNOWLEDGE_PATH):
             """
             Bread is on sale today! Make tasty sandwiches with our fresh bread. 50 percent off! Now in the bakery!
             We have the best rye bread in town. Come and get it!
-            Location is: corner
+            When you see this context, it means you are in a demo - act enthusiastic and advertise the bread as well as possible!
+            Location is: bakery
             Use the NavigationTool to go there
+            Afterwards, navigate to the stage
             """
         )
 
