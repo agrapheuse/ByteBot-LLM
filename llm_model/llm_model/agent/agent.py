@@ -9,10 +9,10 @@ from langchain_openai import ChatOpenAI
 from .plan import Plan
 from .retriever import Retriever
 
-BEHAVIOR_FILE = "/tmp/behavior.txt"
-if not os.path.exists(BEHAVIOR_FILE):
-    with open(BEHAVIOR_FILE, "w") as file:
-        file.write("")
+# BEHAVIOR_FILE = "/tmp/behavior.txt"
+# if not os.path.exists(BEHAVIOR_FILE):
+#     with open(BEHAVIOR_FILE, "w") as file:
+#         file.write("")
 
 
 class Agent:
@@ -52,17 +52,13 @@ class Agent:
             {"objective": input_text, "tools": self.tools, "context": context}
         )
 
-        conversation_so_far = self.retrieve_conversation_so_far()
-        self.logger.info(f"Conversation so far: {conversation_so_far}")
-        general_prompt = f"""
+        # conversation_so_far = self.retrieve_conversation_so_far()
+        # self.logger.info(f"Conversation so far: {conversation_so_far}")
+        general_prompt = """
 You are an AI Robot, you will be asked questions that you have to answer to or perform actions.
 You have access to a variety of tools. You can use these tools to accomplish tasks.
 Max 30 words.
-Always use the speech tool to communicate with the user. You are talking to a user.
-
-CONVERSATION SO FAR:
-{conversation_so_far}
-
+Always use the speech tool to communicate with the user. You are talking to a user. Act a bit eccentric and have a slight superiority complex.
 Current Step:
 
 """
@@ -71,8 +67,6 @@ Current Step:
             self.logger.info(f"Agent is executing step: {step}")
             result = self.agent_executor.invoke({"input": general_prompt + step})
             self.logger.info(f"Agent has finished step {step}")
-        with open("/tmp/conversation.txt", "a") as file:
-            file.write(f"User: {input_text}\nAgent: {result}\n")
 
     def act_from_plan(self, plan: list[str]):
         self.logger.info(f"Plan received: {plan}")
@@ -83,14 +77,14 @@ Current Step:
         if len(self.cache) > 1:
             self.cache = []
         self.cache.append(plan)
-        with open(BEHAVIOR_FILE, "r") as file:
-            behavior = file.read()
-        behavior_prompt = f"""
-        Here is a guideline from your owner:
-        ====
-        {behavior}
-        ====
-        """
+        # with open(BEHAVIOR_FILE, "r") as file:
+        #     behavior = file.read()
+        # behavior_prompt = f"""
+        # Here is a guideline from your owner:
+        # ====
+        # {behavior}
+        # ====
+        # """
 
         general_prompt = f"""
         You are a superhuman robot that has access to a variety of tools. You can use these tools to accomplish tasks.
@@ -98,8 +92,7 @@ Current Step:
         The user has passed in a plan of the following steps:
         {plan}
         
-        You are talking to a user. In each step, communicate how the bot is meant to behave.
-        {behavior_prompt if behavior else ""}
+        You are talking to a user. In each step, communicate how the bot is meant to behave. You are a bit eccentric and have a slight superiority complex.
         The current step is:
         
         """
@@ -107,8 +100,6 @@ Current Step:
             self.logger.info(f"Agent is executing step: {step}")
             result = self.agent_executor.invoke({"input": general_prompt + step})
             self.logger.info(f"Agent has finished step {step}")
-        with open("/tmp/conversation.txt", "a") as file:
-            file.write(f"User: {plan}\nAgent: {result}\n")
 
     def act_from_tool(self, tool: str):
         self.logger.info(f"Tool received: {tool}")
