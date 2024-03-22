@@ -39,7 +39,7 @@ class AudioInput(Node):
         with open("/tmp/voice.txt", "r") as f:
             transcribed = f.read()
         self.get_logger().info(f"Transcribed: {transcribed}")
-        if self.keyword_detected(transcribed) and transcribed[-2:] == "..":
+        if self.keyword_detected(transcribed) and transcribed[-1:] == ".": # If the last character is a dot, then it's a command
             self.get_logger().info("Keyword detected!")
             temp_content = self.sr.meaningfully_split(transcribed)
             temp_content = temp_content[-1] if temp_content else ""
