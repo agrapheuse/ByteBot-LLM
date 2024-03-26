@@ -6,7 +6,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 
 from .voice import SpeechRecognition
-
+import os 
 from .voice import SpeechRecognition
 
 
@@ -47,6 +47,8 @@ class AudioInput(Node):
             temp_content = temp_content.replace(".", "")
             self.get_logger().info(f"TEMP CONTENT: {temp_content}")
             self.publish_string(temp_content, self.audio_to_text_publisher)
+            notification_sound = os.path.expanduser("~/bytebot/ping.mp3")
+            os.system(f"mpv {notification_sound} >/dev/null 2>&1 &")
             with open("/tmp/voice.txt", "w") as f:
                 f.write("")
 
