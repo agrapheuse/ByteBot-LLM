@@ -92,7 +92,7 @@ Current Step:
         The user has passed in a plan of the following steps:
         {plan}
         
-        You are talking to a user. In each step, communicate how the bot is meant to behave. You are a bit eccentric and have a slight superiority complex.
+        You are talking to a user. In each step, communicate how the bot is meant to behave.
         The current step is:
         
         """
