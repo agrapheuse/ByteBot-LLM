@@ -10,34 +10,15 @@ from langchain.tools import BaseTool
 from rclpy.publisher import Publisher
 from std_msgs.msg import String
 
-from .turtlebot4_navigation import TurtleBot4Directions, Turtlebot4Navigator
+from .turtlebot4_navigation import Turtlebot4Navigator
 
 USER_DIR = os.path.expanduser("~")
 # with open(os.path.join(USER_DIR, "bytebot", "commands.json"), "r") as file:
 #     commands = json.load(file)
-commands = {
-    "stage": {
-        "position": [-2.415, 4.013],
-        "orientation": 180,
-        "description": "Entrance of the room",
-    },
-    "bakery": {
-        "position": [-2.492, 10.745],
-        "orientation": 90,
-        "description": "bread corner",
-    },
-    "cheese section": {
-        "position": [-3.746, 0.947],
-        "orientation": 90,
-        "description": "Cisco storage room",
-    },
-    "sleep": {"position": [-0.813, 1.171], "orientation": 0, "description": "Dock"},
-    "wake up": {"position": [-0.813, 1.171], "orientation": 0, "description": "Undock"},
-    "patrol": {"position": [-0.813, 1.171], "orientation": 0, "description": "Patrol"},
-}
+commands = ["stage", "bakery", "cheese section", "sleep", "wake up", "patrol"]
 
 parsed_waypoints_str = "\n".join(
-    [f"{name} : {waypoint['description']}" for name, waypoint in commands.items()]
+    [f"{i}. {waypoint}" for i, waypoint in enumerate(commands, 1)]
 )
 
 

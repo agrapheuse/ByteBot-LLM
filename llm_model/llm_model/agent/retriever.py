@@ -37,6 +37,15 @@ if not os.path.exists(KNOWLEDGE_PATH):
             4.Afterwards, navigate to the stage, DO NOT USE THE SPEECH TOOL FOR THIS, THIS IS THE LAST STEP AFTER THE BAKERY
             """
         )
+    with open(os.path.join(KNOWLEDGE_PATH, "patrol_behavior.txt"), "w") as file:
+        file.write(
+            """
+            When you see this context, it means you are in a demo - act like you are patrolling the store and protecting it.
+            This is how the plan should look like: 
+            1.Say Lets look at my patrolling abilities now, I will protect this store at all cost
+            2.Send patrol to NavigationTool
+            """
+        )
 
 
 class Retriever:

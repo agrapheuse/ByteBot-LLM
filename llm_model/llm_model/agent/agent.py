@@ -70,7 +70,7 @@ Current Step:
 
     def act_from_plan(self, plan: list[str]):
         self.logger.info(f"Plan received: {plan}")
-        plan = plan['plan']
+        plan = plan["plan"]
         if plan in self.cache:
             self.logger.info(f"Plan {plan} is already in cache.")
             return
@@ -136,33 +136,6 @@ IMPORTANT! There should be as little steps as possible. Usually 1-2 but can be m
         )
         return planner
 
-    # def _create_replanner(self):
-    #     """
-    #     This function takes in input text and returns a plan to follow.
-    #     """
-    #     replanner_prompt = ChatPromptTemplate.from_template(
-    #         """For the given objective, come up with a simple step by step plan. \
-    # This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps. \
-    # The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
-
-    # Your objective was this:
-    # {input}
-
-    # Your original plan was this:
-    # {plan}
-
-    # You have currently done the follow steps:
-    # {past_steps}
-
-    # Update your plan accordingly. If no more steps are needed and you can return to the user, then respond with that. Otherwise, fill out the plan. Only add steps to the plan that still NEED to be done. Do not return previously done steps as part of the plan."""
-    #     )
-    #     replanner = create_openai_fn_runnable(
-    #         [Plan, Response],
-    #         ChatOpenAI(model="gpt-4-turbo-preview", temperature=0),
-    #         replanner_prompt,
-    #     )
-    #     return replanner
-
     def retrieve_conversation_so_far(self):
         """
         Retrieve the conversation so far from the graph.
@@ -177,7 +150,6 @@ IMPORTANT! There should be as little steps as possible. Usually 1-2 but can be m
         return conversation_so_far
 
     def _create_retriever(self):
-        USER_FOLDER = os.path.expanduser("~")
         USER_FOLDER = os.path.expanduser("~")
         KNOWLEDGE_PATH = os.path.join(
             USER_FOLDER, "bytebot", "knowledge", "llm-context"
