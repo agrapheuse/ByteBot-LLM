@@ -27,7 +27,7 @@ def main(args=None):
         robot_assistant.get_logger().info(
             "Executing initial setup for the presentation..."
         )
-        command = '{"plan":["use the navigation tool to wake up, dont use the speech tool for this","use the navigation tool to go to the stage","use the speech tool to say something like: hello everyone, my name is adam and I am delighted to welcome you to my presentation. I hope you enjoy the evening and have a great time. lets celebrate with a dance that ive been practicing","use the dance tool to perform a dance", "Use the speech tool to thank everyone and say that youre excited for the bytebot presentation", "Use the navigation tool to go to the stage"]}'
+        command = '{"plan":["use the navigation tool to go to the stage","use the speech tool to say something like: hello everyone, my name is adam and I am delighted to welcome you to my presentation. I hope you enjoy the evening and have a great time. lets celebrate with a dance that ive been practicing","use the dance tool to perform a dance", "Use the speech tool to thank everyone and say that youre excited for the bytebot presentation", "Use the navigation tool to go to the stage"]}'
         robot_assistant.send_command(command)
 
     def patrol():
