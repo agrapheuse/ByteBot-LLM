@@ -51,7 +51,7 @@ class AudioInput(Node):
             os.system(f"mpv {notification_sound} >/dev/null 2>&1 &")
             with open("/tmp/voice.txt", "w") as f:
                 f.write("")
-        if len(transcribed) > 100:
+        if len(transcribed) > 150:
             with open("/tmp/voice.txt", "w") as f:
                 f.write("")
 
