@@ -51,6 +51,9 @@ class AudioInput(Node):
             os.system(f"mpv {notification_sound} >/dev/null 2>&1 &")
             with open("/tmp/voice.txt", "w") as f:
                 f.write("")
+        if len(transcribed) > 100:
+            with open("/tmp/voice.txt", "w") as f:
+                f.write("")
 
     def keyword_detected(self, transcribed):
         keywords = ["hey adam", "hello adam"]
