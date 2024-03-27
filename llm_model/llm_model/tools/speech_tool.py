@@ -20,7 +20,8 @@ from rclpy.publisher import Publisher
 CHEAP = False
 VOICE_ID = "G17SuINrv2H9FC6nvetn"
 flag_file_path = "/tmp/voice_cloning_flag.txt"
-api_key = "c099a9d746f0d3f8ad573e47223b85a8"
+# api_key = "c099a9d746f0d3f8ad573e47223b85a8"
+api_key = "564d1bd9d7a3b49635c8e56de75159ab"
 client = ElevenLabs(api_key=api_key)
 
 
